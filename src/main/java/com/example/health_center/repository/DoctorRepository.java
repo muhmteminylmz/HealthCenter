@@ -18,7 +18,7 @@ public interface DoctorRepository extends JpaRepository<Doctor, Long> {
 
     Optional<Doctor> findByUsername(String username);
 
-    @Query(value = "SELECT * FROM doctor ORDER BY RAND() LIMIT 1", nativeQuery = true)
+    @Query(value = "SELECT * FROM doctor ORDER BY RANDOM() LIMIT 1", nativeQuery = true)
     Optional<Doctor> findRandomDoctor();
 
     //tekrar bak TODO

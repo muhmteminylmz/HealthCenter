@@ -14,6 +14,6 @@ security = @SecurityRequirement(name = "Bearer"))
 @SecurityScheme(name = "Bearer",type = SecuritySchemeType.HTTP,scheme = "Bearer")
 
 public class OpenAPIConfig {
-//localhost:8080/swagger-ui/index.html swagger icin sabit adres
+//localhost:8080/swagger-ui/index.html
 
 }

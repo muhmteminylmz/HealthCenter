@@ -28,17 +28,17 @@ public class Examination {
     @ManyToOne
     private Patient patient;
 
-    @OneToMany(mappedBy = "examination", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    @OneToMany(mappedBy = "examination", fetch = FetchType.LAZY)
     private List<LabTest> labTests;
 
     @ManyToOne
     private Doctor doctor;
 
 
-    @ManyToMany(mappedBy = "examinations", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    @ManyToMany(mappedBy = "examinations", fetch = FetchType.LAZY)
     private List<Nurse> nurses;
 
-    @OneToOne(mappedBy = "examination", cascade = CascadeType.REMOVE)
+    @OneToOne(mappedBy = "examination")
     private Appointment appointment;
 
 }

@@ -20,7 +20,6 @@ public class FamilyDoctor implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    //User dan extend edilmedi
     @OneToOne
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private UserRole userRole;
@@ -28,6 +27,6 @@ public class FamilyDoctor implements Serializable {
     @OneToOne
     private Doctor doctor;
 
-    @OneToMany(mappedBy = "familyDoctor", cascade = CascadeType.REMOVE)
+    @OneToMany(mappedBy = "familyDoctor")
     private List<Patient> patients;
 }

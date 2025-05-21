@@ -14,7 +14,6 @@ public class FieldControl {
     private final ChiefDoctorRepository chiefDoctorRepository;
     private final NurseRepository nurseRepository;
     private final PatientRepository patientRepository;
-    //private final GuestUserRepository guestUserRepository;
 
     public void checkDuplicate(String... values) {
         String username = values[0];

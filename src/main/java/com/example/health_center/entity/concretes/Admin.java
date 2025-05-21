@@ -17,7 +17,7 @@ import javax.persistence.Table;
 @SuperBuilder
 public class Admin extends User {
 
-    private boolean built_in;//ne olursa olsun silinmemeli
+    private boolean built_in;
 
 
 

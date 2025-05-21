@@ -24,7 +24,7 @@ public class LabTestController {
     private final LabTestService labTestService;
 
     @PostMapping("/save")
-    @PreAuthorize("hasAnyAuthority('ADMIN','DOCTOR')")
+    @PreAuthorize("hasAnyAuthority('DOCTOR')")
     public ResponseMessage<LabTestResponse> save(HttpServletRequest request,@RequestBody @Valid LabTestRequest labTestRequest){
 
         String username = (String) request.getAttribute("username");

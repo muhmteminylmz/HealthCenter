@@ -39,7 +39,7 @@ public class ChiefDoctorService {
 
         ChiefDoctor chiefDoctor = createChiefDoctorRequestToDTO(chiefDoctorRequest);
 
-        chiefDoctor.setPassword(passwordEncoder.encode(chiefDoctor.getPassword()));
+        chiefDoctor.setPassword(passwordEncoder.encode(chiefDoctorRequest.getPassword()));
         chiefDoctor.setUserRole(userRoleService.getUserRole(RoleType.CHIEF_DOCTOR));
 
         ChiefDoctor savedChiefDoctor = chiefDoctorRepository.save(chiefDoctor);

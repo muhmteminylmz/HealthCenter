@@ -2,6 +2,7 @@ package com.example.health_center.repository;
 
 import com.example.health_center.entity.concretes.Appointment;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -16,5 +17,6 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     List<Appointment> findByDoctorUsername(String username);
 
     List<Appointment> findByPatientUsername(String username);
+
 
 }

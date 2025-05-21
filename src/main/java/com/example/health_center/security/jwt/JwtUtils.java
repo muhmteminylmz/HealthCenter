@@ -21,10 +21,8 @@ public class JwtUtils {
     @Value("${backendapi.app.jwtExpirationMs}")
     private Long jwtExpirationMs;
 
-    //Not: Generate JWT ****
     public String generateJwtToken(Authentication authentication) {
 
-    //anlik olarak login islemi yapan kullanici bilgisi
         UserDetailsImpl userPrincipal = (UserDetailsImpl) authentication.getPrincipal();
 
         return generateTokenFromUsername(userPrincipal.getUsername());
@@ -42,7 +40,6 @@ public class JwtUtils {
 
     }
 
-    //Not: Validate JWT ****
     public boolean validateJwtToken(String authToken){
 
         try {
@@ -63,7 +60,6 @@ public class JwtUtils {
     }
 
 
-    //Not: getUsernameForJWT ****
     public String getUserNameFromJwtToken(String token){
 
         return Jwts.parser().

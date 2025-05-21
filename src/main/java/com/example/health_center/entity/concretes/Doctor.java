@@ -30,18 +30,18 @@ public class Doctor extends User {
 
     private LocalTime endTime;
 
-    @OneToMany(mappedBy = "doctor", cascade = CascadeType.REMOVE)
+    @OneToMany(mappedBy = "doctor", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Appointment> appointment;
 
     @OneToMany(mappedBy = "doctor", cascade = CascadeType.REMOVE)
     private List<LabTest> labTest;
 
-    @OneToOne(mappedBy = "doctor", cascade = CascadeType.PERSIST,orphanRemoval = true)
+    @OneToOne(mappedBy = "doctor", cascade = CascadeType.PERSIST, orphanRemoval = true)
     private FamilyDoctor familyDoctor;
 
-    @OneToMany(mappedBy = "doctor", cascade = CascadeType.REMOVE)
+    @OneToMany(mappedBy = "doctor")
     private List<Examination> examination;
 
-    @OneToMany(mappedBy = "doctor", cascade = CascadeType.REMOVE)
+    @OneToMany(mappedBy = "doctor")
     private List<Prescription> prescriptions;
 }

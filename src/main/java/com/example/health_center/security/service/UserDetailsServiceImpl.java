@@ -23,7 +23,6 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     @Override
     @Transactional
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        //User i UserDetails e cevirecegiz
 
         ChiefDoctor chiefDoctor = chiefDoctorRepository.findByUsernameEquals(username);
         Doctor doctor = doctorRepository.findByUsernameEquals(username);

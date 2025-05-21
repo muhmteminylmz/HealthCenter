@@ -24,7 +24,7 @@ public class PrescriptionController {
     private final PrescriptionService prescriptionService;
 
     @PostMapping("/save")
-    @PreAuthorize("hasAnyAuthority('ADMIN','DOCTOR')")
+    @PreAuthorize("hasAnyAuthority('DOCTOR')")
     public ResponseMessage<PrescriptionResponse> save(HttpServletRequest request,@RequestBody @Valid PrescriptionRequest prescriptionRequest){
 
         String username = (String) request.getAttribute("username");

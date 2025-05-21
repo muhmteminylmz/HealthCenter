@@ -31,7 +31,6 @@ public class UserDetailsImpl implements UserDetails {
 
     private Collection<? extends GrantedAuthority> authorities;
 
-    //Bu constructor POJO-UserDetail donusumu icin
     public UserDetailsImpl(Long id, String username, String name, Boolean isFamilyDoctor, String password,String role) {
         this.id = id;
         this.username = username;

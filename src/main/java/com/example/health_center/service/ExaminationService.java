@@ -58,6 +58,8 @@ public class ExaminationService {
 
         Examination savedExamination = examinationRepository.save(examination);
 
+        appointmentService.saveExaminationForAppointment(savedExamination);
+
         return ResponseMessage.<ExaminationResponse>builder()
                 .message("Examination Created")
                 .httpStatus(HttpStatus.CREATED)
@@ -173,6 +175,7 @@ public class ExaminationService {
     public Examination createExaminationRequestToDto(ExaminationRequest examinationRequest){
         return Examination.builder()
                 .examinationDate(examinationRequest.getExaminationDate())
+                .diagnosis(examinationRequest.getDiagnosis())
                 .appointment(appointmentService.getAppointmentByAppointmentId(examinationRequest.getAppointmentId()))
                 .build();
     }

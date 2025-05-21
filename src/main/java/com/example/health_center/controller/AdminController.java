@@ -45,7 +45,6 @@ public class AdminController {
         Pageable pageable = PageRequest.of(page, size, Sort.by(sort).ascending());
 
         if (Objects.equals(type,"desc")){
-            //Pageable obje olusturulmasi service katindada yapilabilir.
             pageable = PageRequest.of(page,size,Sort.by(sort).descending());
         }
 

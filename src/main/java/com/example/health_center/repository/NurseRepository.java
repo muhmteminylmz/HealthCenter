@@ -16,7 +16,7 @@ public interface NurseRepository extends JpaRepository<Nurse,Long> {
 
     boolean existsByPhoneNumber(String phoneNumber);
 
-    @Query(value = "SELECT * FROM nurse ORDER BY RAND() LIMIT 2", nativeQuery = true)
+    @Query(value = "SELECT * FROM nurse ORDER BY RANDOM() LIMIT 2", nativeQuery = true)
     List<Nurse> findTwoRandomNurse();
 
 }

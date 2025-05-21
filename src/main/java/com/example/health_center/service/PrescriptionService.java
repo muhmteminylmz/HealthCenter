@@ -112,6 +112,10 @@ public class PrescriptionService {
     public PrescriptionResponse createPrescriptionResponse(Prescription prescription) {
         return PrescriptionResponse.builder()
                 .id(prescription.getId())
+                .doctorId(prescription.getDoctor().getId())
+                .patientId(prescription.getPatient().getId())
+                .doctorName(prescription.getDoctor().getName())
+                .patientName(prescription.getPatient().getName())
                 .medicine(prescription.getMedicine())
                 .dosage(prescription.getDosage())
                 .prescriptionNote(prescription.getPrescriptionNote())

@@ -20,7 +20,7 @@ import java.time.LocalDate;
 @SuperBuilder
 public abstract class User implements Serializable {
 
-    @Id//Burdan tablo olusmayacak ancak SuperBuilder la child lar kullanacak
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
@@ -38,17 +38,14 @@ public abstract class User implements Serializable {
     private LocalDate birthDate;
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    //Client dan DB ye yazma islemi var.Yazabilsin ancak hassas veri oldugundan okuma yapilamasin.
+
     private String password;
 
     @Column(unique = true)
     private String phoneNumber;
 
-    //SuperBuilder bizim burdaki field lari ozellikleri ile birlikte kalitiyor.
-    @OneToOne//Turtettigimiz class larda userRole yazmadan burdan alicaz
-    //hibernate 3.0 sikinti cikartir,cunku derki Admin Rolu 1 kisiye atanabilir(unique),gibi bir yapi kazanir
-    //Bunun icin ManyToOne gibi kullanilmasi gerekir
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)//DB deki Role bilgileri gizli kalsin.
+    @OneToOne
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private UserRole userRole;
 
     private Gender gender;

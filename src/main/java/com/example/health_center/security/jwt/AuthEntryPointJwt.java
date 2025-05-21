@@ -17,15 +17,12 @@ import java.util.Map;
 
 @Component
 public class AuthEntryPointJwt implements AuthenticationEntryPoint {
-    //Bu sinif, yetkilendirme hatasi durumunda islem yapilmasini sagliyor.
 
     private static final Logger logger = LoggerFactory.getLogger(AuthEntryPointJwt.class);
 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
-        //Bir unauthorized hatasinda bu method calistir.
 
-        //logger kullanilarak yetkilendirme hatasi kaydediliyor.
         logger.error("Unauthorized error : {}", authException.getMessage());
 
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);

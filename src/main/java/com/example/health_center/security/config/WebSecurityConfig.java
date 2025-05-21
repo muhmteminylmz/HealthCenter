@@ -58,7 +58,7 @@ public class WebSecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
-        http.cors().//frontend ve backend i farkli serverdaysa calistirmayan guvenlik onlemi
+        http.cors().
         and().csrf().disable().
                 exceptionHandling().authenticationEntryPoint(unauthorizedHandler).and().
                 sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and().
@@ -80,9 +80,9 @@ public class WebSecurityConfig {
             "/*.json",
             "/contactMessages/save",
             "/auth/login",
-            "/v3/api-docs/**", //swagger
-            "/swagger-ui/**", //swagger
-            "/swagger*/**", //swagger
+            "/v3/api-docs/**",
+            "/swagger-ui/**",
+            "/swagger*/**",
     };
 
     @Bean
@@ -91,12 +91,11 @@ public class WebSecurityConfig {
 
             @Override
             public void addCorsMappings(CorsRegistry registry) {
-                //corse uzerinde degislik yapmamizi sagliyor
 
-                registry.addMapping("/**").//Tum URL leri kapsayacak
-                    allowedOrigins("*").//tum kaynaklara izin ver(Farkli protokol,port ...)
-                    allowedHeaders("*").//hangi headlara(request,response taki headlerlar) izin verilecek
-                    allowedMethods("*");//tum HTTP methodlara izin verildi.
+                registry.addMapping("/**").
+                    allowedOrigins("*").
+                    allowedHeaders("*").
+                    allowedMethods("*");
             }
         };
     }

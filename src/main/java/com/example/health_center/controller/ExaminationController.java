@@ -24,7 +24,7 @@ public class ExaminationController {
     private final ExaminationService examinationService;
 
     @PostMapping("/save")
-    @PreAuthorize("hasAnyAuthority('ADMIN','DOCTOR')")
+    @PreAuthorize("hasAnyAuthority('DOCTOR')")
     public ResponseMessage<ExaminationResponse> save(HttpServletRequest request,
             @RequestBody @Valid ExaminationRequest examinationRequest){
 

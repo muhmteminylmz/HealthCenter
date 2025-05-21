@@ -18,17 +18,15 @@ public class UserRoleService {
 
     public UserRole getUserRole(RoleType roleType) {
 
-        Optional<UserRole> userRole = userRoleRepository.findByERoleEquals(roleType);//Query ile yazmak istedik
+        Optional<UserRole> userRole = userRoleRepository.findByERoleEquals(roleType);
         return userRole.orElse(null);
 
     }
 
-    //Runner tarafi icin gerekli method
     public List<UserRole> getAllUserRole() {
         return userRoleRepository.findAll();
     }
 
-    //Runner tarafi icin gerekli method
     public UserRole save(RoleType roleType) {
 
         if(userRoleRepository.existsByERoleEquals(roleType)){

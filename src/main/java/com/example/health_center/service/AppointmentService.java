@@ -2,7 +2,9 @@ package com.example.health_center.service;
 
 import com.example.health_center.entity.concretes.Appointment;
 import com.example.health_center.entity.concretes.Doctor;
+import com.example.health_center.entity.concretes.Examination;
 import com.example.health_center.entity.concretes.Patient;
+import com.example.health_center.entity.enums.AppointmentStatus;
 import com.example.health_center.exception.ConflictException;
 import com.example.health_center.exception.ResourceNotFoundException;
 import com.example.health_center.payload.request.AppointmentRequest;
@@ -127,6 +129,15 @@ public class AppointmentService {
                 .collect(Collectors.toList());
     }
 
+    public void saveExaminationForAppointment(Examination examination) {
+
+        Appointment appointment = getAppointmentByAppointmentId(examination.getAppointment().getId());
+        appointment.setExamination(examination);
+
+        appointmentRepository.save(appointment);
+
+    }
+
 
     public Appointment createAppointment(AppointmentRequest appointmentRequest){
         return Appointment.builder()
@@ -140,14 +151,12 @@ public class AppointmentService {
                 .doctorName(appointment.getDoctor().getName())
                 .appointmentDate(appointment.getAppointmentDate())
                 .id(appointment.getId())
-                .status(appointment.getStatus())
+                .status(AppointmentStatus.SCHEDULED)
                 .patientId(appointment.getPatient().getId())
                 .patientName(appointment.getPatient().getName())
-                .examinationId(appointment.getExamination().getId())
+                //.examinationId(appointment.getExamination().getId())
                 .cancellationReason(appointment.getCancellationReason())
                 .build();
     }
-
-
 
 }
