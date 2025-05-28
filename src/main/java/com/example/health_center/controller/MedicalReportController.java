@@ -26,14 +26,14 @@ public class MedicalReportController {
         return medicalReportService.saveMedicalReport(medicalReportRequest);
     }
 
-    @GetMapping("/myReports")
+    @GetMapping("/patient/reports")
     @PreAuthorize("hasRole('PATIENT')")
     public List<MedicalReportResponse> getReportsForPatient(@AuthenticationPrincipal UserDetailsImpl currentUser) {
         return medicalReportService.getPatientReports(currentUser);
     }
 
 
-    @GetMapping("/myReports")
+    @GetMapping("/doctor/reports")
     @PreAuthorize("hasRole('DOCTOR')")
     public List<MedicalReportResponse> getReportsForDoctor(@AuthenticationPrincipal UserDetailsImpl currentUser) {
         return medicalReportService.getDoctorReports(currentUser);
