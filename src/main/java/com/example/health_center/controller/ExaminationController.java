@@ -1,13 +1,9 @@
 package com.example.health_center.controller;
 
-import com.example.health_center.entity.concretes.Appointment;
-import com.example.health_center.entity.concretes.Examination;
-import com.example.health_center.payload.request.AppointmentRequest;
 import com.example.health_center.payload.request.ExaminationRequest;
 import com.example.health_center.payload.response.ExaminationResponse;
 import com.example.health_center.payload.response.ResponseMessage;
-import com.example.health_center.service.AppointmentService;
-import com.example.health_center.service.ExaminationService;
+import com.example.health_center.service.domain.ExaminationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -40,7 +36,7 @@ public class ExaminationController {
 
     @GetMapping("/getById/{id}")
     @PreAuthorize("hasAnyAuthority('ADMIN','DOCTOR','CHIEFDOCTOR')")
-    public ResponseMessage<ExaminationResponse> getById(@PathVariable Long id){
+    public ResponseMessage<ExaminationResponse> getById(@PathVariable @Valid Long id){
         return examinationService.getById(id);
     }
 
@@ -75,7 +71,7 @@ public class ExaminationController {
 
     @DeleteMapping("/delete/{id}")
     @PreAuthorize("hasAnyAuthority('ADMIN','DOCTOR','CHIEFDOCTOR')")
-    public ResponseMessage<?> delete(@PathVariable Long id){
+    public ResponseMessage<?> delete(@PathVariable @Valid Long id){
         return examinationService.delete(id);
     }
 }

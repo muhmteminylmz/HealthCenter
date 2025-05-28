@@ -1,4 +1,4 @@
-package com.example.health_center.service;
+package com.example.health_center.service.domain;
 
 import com.example.health_center.entity.concretes.UserRole;
 import com.example.health_center.entity.enums.RoleType;

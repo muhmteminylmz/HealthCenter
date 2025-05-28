@@ -6,10 +6,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
+import javax.persistence.*;
 import java.util.List;
 import java.util.Set;
 
@@ -28,6 +25,14 @@ public class Patient extends User {
     @JsonIgnore
     private FamilyDoctor familyDoctor;
 
+    @ManyToMany
+    @JoinTable(
+            name = "patient_allergies",
+            joinColumns = @JoinColumn(name = "patient_id"),
+            inverseJoinColumns = @JoinColumn(name = "allergy_id")
+    )
+    private List<Allergy> allergies;
+
     @OneToMany(mappedBy = "patient", cascade = CascadeType.REMOVE)
     @JsonIgnore
     private List<Appointment> appointments;
@@ -43,4 +48,8 @@ public class Patient extends User {
     @OneToMany(mappedBy = "patient", cascade = CascadeType.REMOVE)
     @JsonIgnore
     private List<Prescription> prescriptions;
+
+    @OneToMany(mappedBy = "patient", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<MedicalReport> medicalReports;
 }

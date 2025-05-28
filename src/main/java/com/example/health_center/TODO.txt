@@ -1,0 +1,10 @@
+Onceki randevularim +
+Reçetelerim +
+Lab Testlerim +
+Hastaliklarim +
+Alerjilerim +
+Raporlarım +
+Acil Durum Notlarim -
+
+Authority
+JSONIgnore

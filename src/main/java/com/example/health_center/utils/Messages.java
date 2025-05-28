@@ -81,4 +81,20 @@ public class Messages {
 
     public static final String INCORRECT_EXAMINATION_MESSAGE =
             "Error: %s does not have such an examination";
+    public static final String ALLERGY_NOT_FOUND_MESSAGE =
+            "Error: %s id allergy not found";
+
+    public static final String DISEASE_NOT_FOUND_MESSAGE =
+            "Error: %s id disease not found";
+    public static final String ALLERGY_DISEASE_DUPLICATE_MESSAGE =
+            "Error: Allergy and disease can not be duplicated";
+
+    public static final String ALLERGY_DUPLICATE_MESSAGE =
+            "Error: Allergy can not be duplicated";
+    public static final String DISEASE_ALREADY_ADDED =
+            "Error: Disease already added for this patient";
+    public static final String PATIENT_ALREADY_HAS_THIS_ALLERGIES =
+            "Error: Patient already has these allergies: ";
+    public static final String NOT_FOUND_MEDICAL_REPORT =
+            "Error: Medical Report with id %s not found";
 }

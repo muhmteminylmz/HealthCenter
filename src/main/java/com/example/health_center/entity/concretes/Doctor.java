@@ -1,6 +1,7 @@
 package com.example.health_center.entity.concretes;
 
 import com.example.health_center.entity.abstracts.User;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
@@ -44,4 +45,8 @@ public class Doctor extends User {
 
     @OneToMany(mappedBy = "doctor")
     private List<Prescription> prescriptions;
+
+    @OneToMany(mappedBy = "doctor", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<MedicalReport> medicalReports;
 }

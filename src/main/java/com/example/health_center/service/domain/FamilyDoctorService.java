@@ -1,4 +1,4 @@
-package com.example.health_center.service;
+package com.example.health_center.service.domain;
 
 import com.example.health_center.entity.abstracts.User;
 import com.example.health_center.entity.concretes.Doctor;

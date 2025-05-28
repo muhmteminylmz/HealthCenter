@@ -2,7 +2,7 @@ package com.example.health_center.controller;
 
 import com.example.health_center.entity.concretes.Admin;
 import com.example.health_center.payload.request.AdminRequest;
-import com.example.health_center.service.AdminService;
+import com.example.health_center.service.domain.AdminService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;

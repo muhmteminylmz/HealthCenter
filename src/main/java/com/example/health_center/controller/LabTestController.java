@@ -1,13 +1,9 @@
 package com.example.health_center.controller;
 
-import com.example.health_center.entity.concretes.Appointment;
-import com.example.health_center.entity.concretes.LabTest;
-import com.example.health_center.payload.request.AppointmentRequest;
 import com.example.health_center.payload.request.LabTestRequest;
 import com.example.health_center.payload.response.LabTestResponse;
 import com.example.health_center.payload.response.ResponseMessage;
-import com.example.health_center.service.AppointmentService;
-import com.example.health_center.service.LabTestService;
+import com.example.health_center.service.domain.LabTestService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -39,7 +35,7 @@ public class LabTestController {
 
     @GetMapping("/getById/{id}")
     @PreAuthorize("hasAnyAuthority('ADMIN','CHIEFDOCTOR')")
-    public ResponseMessage<?> getById(@PathVariable Long id){
+    public ResponseMessage<?> getById(@PathVariable @Valid Long id){
         return labTestService.getById(id);
     }
 
@@ -61,14 +57,14 @@ public class LabTestController {
     //TODO PATCH yapilip ayri DTO olusturulacak
     @PutMapping("/updateStatus/{id}")
     @PreAuthorize("hasAnyAuthority('ADMIN','DOCTOR','CHIEFDOCTOR')")
-    public ResponseMessage<LabTestResponse> updateStatus(@PathVariable Long id,
+    public ResponseMessage<LabTestResponse> updateStatus(@PathVariable @Valid Long id,
                                                          @RequestBody @Valid LabTestRequest labtestRequest){
         return labTestService.updateLabTestStatus(id,labtestRequest);
     }
 
     @PutMapping("/update/{labTestId}")
     @PreAuthorize("hasAnyAuthority('ADMIN','DOCTOR','CHIEFDOCTOR')")
-    public ResponseMessage<LabTestResponse> update(@PathVariable Long labTestId,
+    public ResponseMessage<LabTestResponse> update(@PathVariable @Valid Long labTestId,
                                                @RequestBody @Valid LabTestRequest labTestRequest){
 
         return labTestService.update(labTestId,labTestRequest);
@@ -76,7 +72,7 @@ public class LabTestController {
 
     @DeleteMapping("/delete/{id}")
     @PreAuthorize("hasAnyAuthority('ADMIN','DOCTOR')")
-    public ResponseMessage<?> delete(@PathVariable Long id){
+    public ResponseMessage<?> delete(@PathVariable @Valid Long id){
         return labTestService.delete(id);
     }
 }

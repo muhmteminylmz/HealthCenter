@@ -1,12 +1,10 @@
 package com.example.health_center.controller;
 
-import com.example.health_center.entity.concretes.Appointment;
-import com.example.health_center.entity.concretes.ChiefDoctor;
 import com.example.health_center.payload.request.ChiefDoctorRequest;
 import com.example.health_center.payload.response.ChiefDoctorResponse;
 import com.example.health_center.payload.response.ResponseMessage;
-import com.example.health_center.service.ChiefDoctorService;
-import com.example.health_center.service.UserRoleService;
+import com.example.health_center.service.domain.ChiefDoctorService;
+import com.example.health_center.service.domain.UserRoleService;
 import com.example.health_center.utils.FieldControl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -43,13 +41,13 @@ public class ChiefDoctorController {
 
     @GetMapping("/getById/{id}")
     @PreAuthorize("hasAnyAuthority('ADMIN')")
-    public ResponseMessage<ChiefDoctorResponse>getById(@PathVariable Long id){
+    public ResponseMessage<ChiefDoctorResponse>getById(@PathVariable @Valid Long id){
         return chiefDoctorService.getById(id);
     }
 
     @PutMapping("/update/{userId}")
     @PreAuthorize("hasAnyAuthority('ADMIN')")
-    public ResponseMessage<?> update(@PathVariable Long userId,
+    public ResponseMessage<?> update(@PathVariable @Valid Long userId,
                                                @RequestBody @Valid ChiefDoctorRequest chiefDoctorRequest){
 
         return chiefDoctorService.update(userId,chiefDoctorRequest);
@@ -57,7 +55,7 @@ public class ChiefDoctorController {
 
     @DeleteMapping("/delete/{id}")
     @PreAuthorize("hasAnyAuthority('ADMIN')")
-    public ResponseMessage<?> delete(@PathVariable Long id){
+    public ResponseMessage<?> delete(@PathVariable @Valid Long id){
         return chiefDoctorService.delete(id);
     }
 }

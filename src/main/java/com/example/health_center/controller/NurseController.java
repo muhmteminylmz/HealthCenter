@@ -3,12 +3,9 @@ package com.example.health_center.controller;
 import com.example.health_center.payload.request.NurseRequest;
 import com.example.health_center.payload.response.NurseResponse;
 import com.example.health_center.payload.response.ResponseMessage;
-import com.example.health_center.service.NurseService;
-import com.example.health_center.service.UserRoleService;
-import com.example.health_center.utils.FieldControl;
+import com.example.health_center.service.domain.NurseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -36,13 +33,13 @@ public class NurseController {
 
     @GetMapping("/getById/{id}")
     @PreAuthorize("hasAnyAuthority('ADMIN','DOCTOR','CHIEFDOCTOR')")
-    public ResponseMessage<NurseResponse> getById(@PathVariable Long id){
+    public ResponseMessage<NurseResponse> getById(@PathVariable @Valid Long id){
         return nurseService.getById(id);
     }
 
     @PutMapping("/update/{userId}")
     @PreAuthorize("hasAnyAuthority('ADMIN','CHIEFDOCTOR')")
-    public ResponseMessage<NurseResponse> update(@PathVariable Long userId,
+    public ResponseMessage<NurseResponse> update(@PathVariable @Valid Long userId,
                                                @RequestBody @Valid NurseRequest nurseRequest){
 
         return nurseService.update(userId,nurseRequest);
@@ -50,7 +47,7 @@ public class NurseController {
 
     @DeleteMapping("/delete/{id}")
     @PreAuthorize("hasAnyAuthority('ADMIN','CHIEFDOCTOR')")
-    public ResponseMessage<?> delete(@PathVariable Long id){
+    public ResponseMessage<?> delete(@PathVariable @Valid Long id){
         return nurseService.delete(id);
     }
 }

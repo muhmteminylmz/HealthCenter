@@ -1,4 +1,4 @@
-package com.example.health_center.service;
+package com.example.health_center.service.domain;
 
 import com.example.health_center.payload.request.AdminRequest;
 import com.example.health_center.payload.response.ResponseMessage;
@@ -6,10 +6,7 @@ import com.example.health_center.repository.AdminRepository;
 import com.example.health_center.entity.concretes.Admin;
 import com.example.health_center.entity.enums.RoleType;
 import com.example.health_center.exception.ConflictException;
-import com.example.health_center.payload.request.AdminRequest;
 import com.example.health_center.payload.response.AdminResponse;
-import com.example.health_center.payload.response.ResponseMessage;
-import com.example.health_center.repository.*;
 import com.example.health_center.utils.FieldControl;
 import com.example.health_center.utils.Messages;
 import lombok.RequiredArgsConstructor;

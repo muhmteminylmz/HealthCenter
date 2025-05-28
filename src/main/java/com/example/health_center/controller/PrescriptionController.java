@@ -1,13 +1,9 @@
 package com.example.health_center.controller;
 
-import com.example.health_center.entity.concretes.Appointment;
-import com.example.health_center.entity.concretes.Prescription;
-import com.example.health_center.payload.request.AppointmentRequest;
 import com.example.health_center.payload.request.PrescriptionRequest;
 import com.example.health_center.payload.response.PrescriptionResponse;
 import com.example.health_center.payload.response.ResponseMessage;
-import com.example.health_center.service.AppointmentService;
-import com.example.health_center.service.PrescriptionService;
+import com.example.health_center.service.domain.PrescriptionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -39,7 +35,7 @@ public class PrescriptionController {
 
     @GetMapping("/getById/{id}")
     @PreAuthorize("hasAnyAuthority('ADMIN','DOCTOR','CHIEFDOCTOR')")
-    public ResponseMessage<?> getById(@PathVariable Long id){
+    public ResponseMessage<?> getById(@PathVariable @Valid Long id){
         return prescriptionService.getById(id);
     }
 
@@ -59,7 +55,7 @@ public class PrescriptionController {
 
     @PutMapping("/update/{prescriptionId}")
     @PreAuthorize("hasAnyAuthority('ADMIN','DOCTOR','CHIEFDOCTOR')")
-    public ResponseMessage<PrescriptionResponse> update(@PathVariable Long prescriptionId,
+    public ResponseMessage<PrescriptionResponse> update(@PathVariable @Valid Long prescriptionId,
                                                @RequestBody @Valid PrescriptionRequest prescriptionRequest){
 
         return prescriptionService.update(prescriptionId,prescriptionRequest);
@@ -67,7 +63,7 @@ public class PrescriptionController {
 
     @DeleteMapping("/delete/{id}")
     @PreAuthorize("hasAnyAuthority('ADMIN','DOCTOR','CHIEFDOCTOR')")
-    public ResponseMessage<?> delete(@PathVariable Long id){
+    public ResponseMessage<?> delete(@PathVariable @Valid Long id){
         return prescriptionService.delete(id);
     }
 }

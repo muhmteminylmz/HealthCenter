@@ -1,5 +1,7 @@
 package com.example.health_center.payload.response;
 
+import com.example.health_center.entity.concretes.Allergy;
+import com.example.health_center.entity.concretes.Disease;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,6 +18,8 @@ public class ExaminationResponse {
 
     private Long id;
     private LocalDateTime examinationDate;
+    private List<AllergyResponse> allergies;
+    private List<DiseaseResponse> diseases;
     private String diagnosis;
 
     private PatientResponse patient;

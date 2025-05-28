@@ -3,19 +3,18 @@ package com.example.health_center.entity.concretes;
 import com.example.health_center.entity.enums.AppointmentStatus;
 import com.example.health_center.entity.enums.CancellationReason;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.Date;
 
 @Entity
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode(of = "id")
 @Builder(toBuilder = true)
 public class Appointment {
 

@@ -1,6 +1,5 @@
-package com.example.health_center.service;
+package com.example.health_center.service.domain;
 
-import com.example.health_center.entity.concretes.Appointment;
 import com.example.health_center.entity.concretes.Nurse;
 import com.example.health_center.entity.enums.RoleType;
 import com.example.health_center.exception.ResourceNotFoundException;
@@ -150,7 +149,6 @@ public class NurseService {
                 .endTime(nurseRequest.getEndTime())
                 .name(nurseRequest.getName())
                 .tc(nurseRequest.getTc())
-                .name(nurseRequest.getName())
                 .birthDate(nurseRequest.getBirthDate())
                 .phoneNumber(nurseRequest.getPhoneNumber())
                 .gender(nurseRequest.getGender())

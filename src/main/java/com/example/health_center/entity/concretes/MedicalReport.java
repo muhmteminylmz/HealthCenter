@@ -1,11 +1,9 @@
 package com.example.health_center.entity.concretes;
 
-import com.example.health_center.entity.enums.TestStatus;
-import com.example.health_center.entity.enums.TestType;
 import lombok.*;
 
 import javax.persistence.*;
-import javax.print.Doc;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -14,24 +12,23 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder(toBuilder = true)
-public class LabTest {
+public class MedicalReport {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private TestType testType;
+    private String name;
 
-    private LocalDateTime testDate;
+    private String description;
 
-    private String testResult;
+    private LocalDateTime reportDate;
 
-    private TestStatus status;
+    private LocalDate startDate;
 
-    private Integer price;
+    private LocalDate endDate;
 
-    @ManyToOne
-    private Examination examination;
+    private Disease diagnosis;
 
     @ManyToOne
     private Patient patient;
@@ -39,5 +36,10 @@ public class LabTest {
     @ManyToOne
     private Doctor doctor;
 
-
+    @PrePersist
+    public void prePersist() {
+        if (reportDate == null) {
+            reportDate = LocalDateTime.now();
+        }
+    }
 }

@@ -3,7 +3,7 @@ package com.example.health_center.controller;
 import com.example.health_center.payload.request.AppointmentRequest;
 import com.example.health_center.payload.response.AppointmentResponse;
 import com.example.health_center.payload.response.ResponseMessage;
-import com.example.health_center.service.AppointmentService;
+import com.example.health_center.service.domain.AppointmentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.List;
-import java.util.Set;
 
 @RestController
 @RequestMapping("appointment")
@@ -37,7 +36,7 @@ public class AppointmentController {
 
     @GetMapping("/getById/{id}")
     @PreAuthorize("hasAnyAuthority('ADMIN')")
-    public AppointmentResponse getById(@PathVariable Long id){
+    public AppointmentResponse getById(@PathVariable @Valid Long id){
         return appointmentService.getById(id);
     }
 
@@ -60,7 +59,7 @@ public class AppointmentController {
 
     @DeleteMapping("/delete/{id}")
     @PreAuthorize("hasAnyAuthority('ADMIN')")
-    public ResponseMessage<?> delete(@PathVariable Long id){
+    public ResponseMessage<?> delete(@PathVariable @Valid Long id){
         return appointmentService.delete(id);
     }
 }

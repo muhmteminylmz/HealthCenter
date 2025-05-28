@@ -1,10 +1,7 @@
-package com.example.health_center.service;
+package com.example.health_center.service.domain;
 
-import com.example.health_center.entity.concretes.Appointment;
 import com.example.health_center.entity.concretes.ChiefDoctor;
-import com.example.health_center.entity.concretes.UserRole;
 import com.example.health_center.entity.enums.RoleType;
-import com.example.health_center.exception.ConflictException;
 import com.example.health_center.exception.ResourceNotFoundException;
 import com.example.health_center.payload.request.ChiefDoctorRequest;
 import com.example.health_center.payload.response.ChiefDoctorResponse;
@@ -18,7 +15,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.beans.Encoder;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -61,15 +57,19 @@ public class ChiefDoctorService {
 
     public ResponseMessage<ChiefDoctorResponse> getById(Long id) {
 
-        Optional<ChiefDoctor> chiefDoctor = chiefDoctorRepository.findById(id);
+        /*Optional<ChiefDoctor> chiefDoctor = chiefDoctorRepository.findById(id);
 
         if (!chiefDoctorRepository.existsById(id)){
             throw new ResourceNotFoundException(String.format(Messages.NOT_FOUND_USER_MESSAGE));
-        }
+        }*/
+
+        ChiefDoctor chiefDoctor = chiefDoctorRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(Messages.NOT_FOUND_USER_MESSAGE));
+
 
         return ResponseMessage.<ChiefDoctorResponse>builder()
                 .httpStatus(HttpStatus.OK)
-                .object(createChiefDoctorResponse(chiefDoctor.get()))
+                .object(createChiefDoctorResponse(chiefDoctor))
                 .build();
     }
 
@@ -85,7 +85,7 @@ public class ChiefDoctorService {
 
         ChiefDoctor updatedChiefDoctor = createUpdatedChiefDoctor(newChiefDoctor,userId);
 
-        updatedChiefDoctor.setPassword(passwordEncoder.encode(updatedChiefDoctor.getPassword()));
+        updatedChiefDoctor.setPassword(passwordEncoder.encode(newChiefDoctor.getPassword()));
 
         ChiefDoctor savedChiefDoctor = chiefDoctorRepository.save(updatedChiefDoctor);
 

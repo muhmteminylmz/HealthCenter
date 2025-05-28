@@ -1,13 +1,12 @@
 package com.example.health_center.controller;
 
-import com.example.health_center.entity.concretes.Appointment;
 import com.example.health_center.entity.concretes.Patient;
-import com.example.health_center.payload.request.NurseRequest;
+import com.example.health_center.payload.request.AllergyIdsRequest;
 import com.example.health_center.payload.request.PatientRequest;
 import com.example.health_center.payload.response.PatientResponse;
 import com.example.health_center.payload.response.ResponseMessage;
-import com.example.health_center.service.PatientService;
-import com.example.health_center.service.UserRoleService;
+import com.example.health_center.service.domain.PatientService;
+import com.example.health_center.service.domain.UserRoleService;
 import com.example.health_center.utils.FieldControl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -25,10 +24,6 @@ public class PatientController {
 
     private final PatientService patientService;
 
-    private final UserRoleService userRoleService;
-
-    private final PasswordEncoder passwordEncoder;
-    private final FieldControl fieldControl;
 
     @PostMapping("/save")
     @PreAuthorize("hasAnyAuthority('ADMIN')")
@@ -45,9 +40,19 @@ public class PatientController {
 
     @GetMapping("/getById/{id}")
     @PreAuthorize("hasAnyAuthority('ADMIN','DOCTOR','CHIEFDOCTOR')")
-    public PatientResponse getById(@PathVariable Long id){
+    public PatientResponse getById(@PathVariable @Valid Long id){
         return patientService.getById(id);
     }
+
+    @PreAuthorize("#patientId == authentication.principal.id or hasRole('PATIENT')")
+    @PostMapping("/{patientId}/allergies")
+    public ResponseMessage<?> addAllergiesToPatient(
+            @PathVariable @Valid Long patientId,
+            @RequestBody AllergyIdsRequest request
+    ) {
+        return patientService.addAllergies(patientId, request.allergyIds());
+    }
+
 
     //todo sadece familydoctor kullancak
     @GetMapping("/getMyPatientsByUser")
@@ -58,7 +63,7 @@ public class PatientController {
     }
 
     @PutMapping("/changeFamilyDoctor")
-    @PreAuthorize("hasAnyAuthority('ADMIN','CHIEFDOCTOR')")
+    @PreAuthorize("hasAnyAuthority('PATIENT')")
     public ResponseMessage<?> changePatientFamilyDoctor(HttpServletRequest request){
         String username = (String) request.getAttribute("username");
         return patientService.changeFamilyDoctor(username);
@@ -66,7 +71,7 @@ public class PatientController {
 
     @PutMapping("/update/{userId}")
     @PreAuthorize("hasAnyAuthority('ADMIN')")
-    public ResponseMessage<Patient> update(@PathVariable Long userId,
+    public ResponseMessage<Patient> update(@PathVariable @Valid Long userId,
                                            @RequestBody @Valid PatientRequest patientRequest){
 
         return patientService.update(userId,patientRequest);
@@ -74,7 +79,7 @@ public class PatientController {
 
     @DeleteMapping("/delete/{id}")
     @PreAuthorize("hasAnyAuthority('ADMIN')")
-    public ResponseMessage<?> delete(@PathVariable Long id){
+    public ResponseMessage<?> delete(@PathVariable @Valid Long id){
         return patientService.delete(id);
     }
 }

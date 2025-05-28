@@ -1,14 +1,9 @@
-package com.example.health_center.service;
+package com.example.health_center.service.domain;
 
-import com.example.health_center.entity.abstracts.User;
-import com.example.health_center.entity.concretes.Appointment;
-import com.example.health_center.entity.concretes.Doctor;
-import com.example.health_center.entity.concretes.Examination;
-import com.example.health_center.entity.concretes.Nurse;
+import com.example.health_center.entity.concretes.*;
+import com.example.health_center.exception.ConflictException;
 import com.example.health_center.exception.ResourceNotFoundException;
 import com.example.health_center.payload.request.ExaminationRequest;
-import com.example.health_center.payload.response.AppointmentResponse;
-import com.example.health_center.payload.response.DoctorResponse;
 import com.example.health_center.payload.response.ExaminationResponse;
 import com.example.health_center.payload.response.ResponseMessage;
 import com.example.health_center.repository.ExaminationRepository;
@@ -17,9 +12,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -30,8 +26,17 @@ public class ExaminationService {
     private final AppointmentService appointmentService;
     private final DoctorService doctorService;
     private final PatientService patientService;
+    private final PatientDiseaseService patientDiseaseService;
     private final NurseService nurseService;
+    private final AllergyService allergyService;
+    private final DiseaseService diseaseService;
 
+    public boolean hasDuplicatedValueInList(List<Long> ids){
+        if (ids == null) return false;
+        return ids.stream().distinct().count() != ids.size();
+    }
+
+    @Transactional
     public ResponseMessage<ExaminationResponse> save(String username,ExaminationRequest examinationRequest) {
 
          List<Appointment> appointments = appointmentService.getAppointmentsByUsernameForExamination(username);
@@ -43,12 +48,23 @@ public class ExaminationService {
              throw new ResourceNotFoundException(String.format(Messages.INCORRECT_APPOINTMENT_MESSAGE,username));
          }
 
+
+        if (hasDuplicatedValueInList(examinationRequest.getAllergy_Ids()) ||
+                hasDuplicatedValueInList(examinationRequest.getDisease_Ids())){
+            throw new ConflictException(Messages.ALLERGY_DISEASE_DUPLICATE_MESSAGE);
+        }
+
         Examination examination = createExaminationRequestToDto(examinationRequest);
+
+        Patient patient = appointment.getPatient();
+
+        patientDiseaseService.saveDiseasesForPatient(patient.getId(),examinationRequest.getDisease_Ids());
+        patientService.saveAllergiesForPatient(patient.getId(),examinationRequest.getAllergy_Ids());
 
          //Suanlik burdalar
         examination.setDoctor(doctorService.findRandomAvailableDoctor());
         examination.setNurses(nurseService.findRandomAvailableTwoNurse());
-        examination.setPatient(appointment.getPatient());
+        examination.setPatient(patient);
         examination.setAppointment(appointment);
         //TODO
 
@@ -59,6 +75,7 @@ public class ExaminationService {
         Examination savedExamination = examinationRepository.save(examination);
 
         appointmentService.saveExaminationForAppointment(savedExamination);
+
 
         return ResponseMessage.<ExaminationResponse>builder()
                 .message("Examination Created")
@@ -95,6 +112,7 @@ public class ExaminationService {
                 .build();
     }
 
+    @Transactional
     public ResponseMessage<ExaminationResponse> update(Long examinationId, ExaminationRequest examinationRequest) {
 
         Examination examination = examinationRepository.findById(examinationId).orElseThrow(()
@@ -102,12 +120,15 @@ public class ExaminationService {
 
         Examination updatedExamination = createUpdateExaminationResponse(examinationRequest, examinationId);
 
+        Patient patient = examination.getPatient();
+        patientDiseaseService.saveDiseasesForPatient(patient.getId(),examinationRequest.getDisease_Ids());
+        patientService.saveAllergiesForPatient(patient.getId(),examinationRequest.getAllergy_Ids());
+
         updatedExamination.setAppointment(examination.getAppointment());
         updatedExamination.setExaminationDate(examination.getExaminationDate());
 
-        updatedExamination.setAppointment(examination.getAppointment());
         updatedExamination.setNurses(examination.getNurses());
-        updatedExamination.setPatient(examination.getPatient());
+        updatedExamination.setPatient(patient);
         updatedExamination.setDoctor(examination.getDoctor());
 
         Examination savedExamination = examinationRepository.save(updatedExamination);
@@ -155,8 +176,7 @@ public class ExaminationService {
 
     public List<Examination> getMyExaminationsByDoctorUsernameForLabTest(String username) {
 
-        return examinationRepository.findAllByDoctorUsername(username).stream()
-                .collect(Collectors.toList());
+        return new ArrayList<>(examinationRepository.findAllByDoctorUsername(username));
     }
 
 
@@ -164,6 +184,8 @@ public class ExaminationService {
         return ExaminationResponse.builder()
                 .id(examination.getId())
                 .examinationDate(examination.getExaminationDate())
+                .allergies(allergyService.createAllergyResponseList(examination.getAllergies()))
+                .diseases(diseaseService.createDiseaseResponseList(examination.getDiseases()))
                 .diagnosis(examination.getDiagnosis())
                 .doctors(doctorService.createDoctorResponse(examination.getDoctor()))
                 .patient(patientService.createPatientResponse(examination.getPatient()))
@@ -173,17 +195,29 @@ public class ExaminationService {
     }
 
     public Examination createExaminationRequestToDto(ExaminationRequest examinationRequest){
+
+        List<Allergy> allergies = allergyService.getAllAllergiesByAllergyIds(examinationRequest.getAllergy_Ids());
+        List<Disease> diseases = diseaseService.getDiseaseByDiseaseIds(examinationRequest.getDisease_Ids());
+
         return Examination.builder()
                 .examinationDate(examinationRequest.getExaminationDate())
+                .allergies(allergies)
+                .diseases(diseases)
                 .diagnosis(examinationRequest.getDiagnosis())
                 .appointment(appointmentService.getAppointmentByAppointmentId(examinationRequest.getAppointmentId()))
                 .build();
     }
 
     public Examination createUpdateExaminationResponse(ExaminationRequest newExamination,Long ExaminationId){
+
+        List<Allergy> allergies = allergyService.getAllAllergiesByAllergyIds(newExamination.getAllergy_Ids());
+        List<Disease> diseases = diseaseService.getDiseaseByDiseaseIds(newExamination.getDisease_Ids());
+
         return Examination.builder()
                 .id(ExaminationId)
                 //.examinationDate(newExamination.getExaminationDate())
+                .diseases(diseases)
+                .allergies(allergies)
                 .diagnosis(newExamination.getDiagnosis())
                 //.appointment(appointmentService.getAppointmentByAppointmentId(newExamination.getAppointmentId()))
                 //NOT: Bunlarin alinmasinin mantigi yok
@@ -194,5 +228,23 @@ public class ExaminationService {
 
         return examinationRepository.findById(examinationId).orElseThrow(()
                 -> new ResourceNotFoundException(String.format(Messages.EXAMINATION_NOT_FOUND_MESSAGE, examinationId)));
+    }
+
+    public void saveLabTestForExamination(LabTest savedLabTest) {
+
+        Examination examination = getByIdForLabTest(savedLabTest.getExamination().getId());
+
+        List<LabTest> labTests = examination.getLabTests();
+        if (labTests == null) {
+            labTests = new ArrayList<>();
+        } else {
+            labTests = new ArrayList<>(labTests); //degistirilemez listeler icin
+        }
+
+        labTests.add(savedLabTest);
+        examination.setLabTests(labTests);
+
+        examinationRepository.save(examination);
+
     }
 }

@@ -2,12 +2,12 @@ package com.example.health_center.controller;
 
 import com.example.health_center.payload.response.FamilyDoctorResponse;
 import com.example.health_center.payload.response.ResponseMessage;
-import com.example.health_center.service.FamilyDoctorService;
+import com.example.health_center.service.domain.FamilyDoctorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -25,7 +25,7 @@ public class FamilyDoctorController {
 
     @GetMapping("/getById/{id}")
     @PreAuthorize("hasAnyAuthority('ADMIN','CHIEFDOCTOR')")
-    public ResponseMessage<FamilyDoctorResponse> getById(@PathVariable Long id){
+    public ResponseMessage<FamilyDoctorResponse> getById(@PathVariable @Valid Long id){
         return familyDoctorService.getById(id);
     }
 
@@ -33,7 +33,7 @@ public class FamilyDoctorController {
     //Artik Aile Doktoru Degil
     @DeleteMapping("/delete/{id}")
     @PreAuthorize("hasAnyAuthority('ADMIN')")
-    public ResponseMessage<?> delete(@PathVariable Long id){
+    public ResponseMessage<?> delete(@PathVariable @Valid Long id){
         return familyDoctorService.delete(id);
     }
 }

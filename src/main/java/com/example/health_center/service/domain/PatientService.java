@@ -1,12 +1,10 @@
-package com.example.health_center.service;
+package com.example.health_center.service.domain;
 
-import com.example.health_center.entity.concretes.Appointment;
-import com.example.health_center.entity.concretes.Doctor;
-import com.example.health_center.entity.concretes.FamilyDoctor;
-import com.example.health_center.entity.concretes.Patient;
+import com.example.health_center.entity.concretes.*;
 import com.example.health_center.entity.enums.RoleType;
+import com.example.health_center.entity.relations.PatientDisease;
+import com.example.health_center.exception.ConflictException;
 import com.example.health_center.exception.ResourceNotFoundException;
-import com.example.health_center.payload.request.DoctorRequest;
 import com.example.health_center.payload.request.PatientRequest;
 import com.example.health_center.payload.response.PatientResponse;
 import com.example.health_center.payload.response.ResponseMessage;
@@ -19,8 +17,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,6 +28,8 @@ public class PatientService {
 
     private final PatientRepository patientRepository;
     private final FamilyDoctorService familyDoctorService;
+    private final AllergyService allergyService;
+    private final MedicalReportService medicalReportService;
     private final FieldControl fieldControl;
     private final PasswordEncoder passwordEncoder;
     private final UserRoleService userRoleService;
@@ -146,6 +147,8 @@ public class PatientService {
                 new ResourceNotFoundException(String.format(Messages.NOT_FOUND_USER2_MESSAGE,patientId)));
     }
 
+
+
     public PatientResponse createPatientResponse(Patient patient){
         return PatientResponse.builder()
                 .tc(patient.getTc())
@@ -157,6 +160,9 @@ public class PatientService {
                 .userName(patient.getUsername())
                 .userId(patient.getId())
                 .bloodType(patient.getBloodType())
+                .allergies(allergyService.createAllergyResponseList(patient.getAllergies()))
+                .medicalReports(medicalReportService.getPatientReportsForCustom(patient.getId()))
+                //TODO .familyDoctorId(patient.getFamilyDoctor() != null ? patient.getFamilyDoctor().getId() : null)
                 .familyDoctorId(patient.getFamilyDoctor().getId())
                 .build();
     }
@@ -186,9 +192,73 @@ public class PatientService {
                 .username(newPatient.getUsername())
                 .id(userId)
                 .bloodType(newPatient.getBloodType())
+                .allergies(allergyService.getAllAllergiesByAllergyIds(newPatient.getAllergyIds()))
                 .userRole(userRoleService.getUserRole(RoleType.PATIENT))
                 .build();
     }
 
+    /*public void saveDiseasesForPatient(Long patientId,List<Long> diseaseIds) {
+        Patient patient = getPatientById(patientId);
 
+        List<Disease> diseases = diseaseService.getDiseaseByDiseaseIds(diseaseIds);
+
+        // Yeni ilişkileri oluştur
+        List<PatientDisease> relations = diseases.stream()
+                .map(disease -> PatientDisease.builder()
+                        .patient(patient)
+                        .disease(disease)
+                        .diagnosedAt(LocalDate.now()) // veya dışarıdan gelen tarih
+                        .build())
+                .collect(Collectors.toList());
+
+        patientDiseaseService.saveAllPatientDiseases(relations);
+    }*/
+
+    public boolean hasCommonElements(List<Long> ids,List<Long> allIds){
+        return allIds.stream().noneMatch(ids::contains);
+    }
+
+    public void saveAllergiesForPatient(Long patientId,List<Long> allergyIds) {
+        Patient patient = getPatientById(patientId);
+
+        List<Long> patientAllergyIds = patient.getAllergies().stream().map(Allergy::getId).toList();
+
+        if (!hasCommonElements(allergyIds,patientAllergyIds)){
+            throw new ResourceNotFoundException(Messages.ALLERGY_DUPLICATE_MESSAGE);
+        }
+
+        patient.setAllergies(allergyService.getAllAllergiesByAllergyIds(allergyIds));
+        patientRepository.save(patient);
+    }
+
+    public ResponseMessage<PatientResponse> addAllergies(Long patientId, List<Long> allergyIds) {
+
+        Patient patient = patientRepository.findById(patientId)
+                .orElseThrow(() -> new ResourceNotFoundException("Patient not found"));
+
+
+        List<Allergy> allergies = allergyService.getAllAllergiesByAllergyIds(allergyIds);
+
+        List<Allergy> existingAllergies = patient.getAllergies();
+        List<String> duplicateAllergyNames = allergies.stream()
+                .filter(existingAllergies::contains)
+                .map(Allergy::getName)
+                .toList();
+
+        if (!duplicateAllergyNames.isEmpty()) {
+            throw new ConflictException(Messages.PATIENT_ALREADY_HAS_THIS_ALLERGIES + String.join(", ", duplicateAllergyNames));
+        }
+
+        allergies.removeIf(patient.getAllergies()::contains);
+
+        existingAllergies.addAll(allergies);
+
+        patientRepository.save(patient);
+
+        return ResponseMessage.<PatientResponse>builder()
+                .httpStatus(HttpStatus.OK)
+                .message("Allergies Added")
+                .object(createPatientResponse(patient))
+                .build();
+    }
 }

@@ -1,4 +1,4 @@
-package com.example.health_center.service;
+package com.example.health_center.service.domain;
 
 import com.example.health_center.entity.concretes.Appointment;
 import com.example.health_center.entity.concretes.Doctor;
@@ -13,14 +13,11 @@ import com.example.health_center.payload.response.ResponseMessage;
 import com.example.health_center.repository.AppointmentRepository;
 import com.example.health_center.utils.Messages;
 import lombok.RequiredArgsConstructor;
-import org.apache.logging.log4j.message.Message;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -33,7 +30,7 @@ public class AppointmentService {
 
     public ResponseMessage<AppointmentResponse> save(String username,AppointmentRequest appointmentRequest) {
 
-        Doctor doctor = doctorService.getByIdForAppointment(appointmentRequest.getDoctorId());
+        Doctor doctor = doctorService.getByIdForCustom(appointmentRequest.getDoctorId());
         Patient patient = patientService.getByUsername(username);
 
         if (checkDateTimeConflictForAppointment(doctor.getId(),patient.getId(),appointmentRequest.getAppointmentDate())){
@@ -154,7 +151,7 @@ public class AppointmentService {
                 .status(AppointmentStatus.SCHEDULED)
                 .patientId(appointment.getPatient().getId())
                 .patientName(appointment.getPatient().getName())
-                //.examinationId(appointment.getExamination().getId())
+                .examinationId(appointment.getExamination().getId())
                 .cancellationReason(appointment.getCancellationReason())
                 .build();
     }

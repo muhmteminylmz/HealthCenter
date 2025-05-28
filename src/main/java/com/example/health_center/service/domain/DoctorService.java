@@ -1,4 +1,4 @@
-package com.example.health_center.service;
+package com.example.health_center.service.domain;
 
 import com.example.health_center.entity.concretes.Doctor;
 import com.example.health_center.entity.enums.RoleType;
@@ -25,6 +25,7 @@ public class DoctorService {
 
     private final DoctorRepository doctorRepository;
     private final FamilyDoctorService familyDoctorService;
+    private final MedicalReportService medicalReportService;
 
     private final FieldControl fieldControl;
     private final PasswordEncoder passwordEncoder;
@@ -146,6 +147,7 @@ public class DoctorService {
                 .userName(doctor.getUsername())
                 .userId(doctor.getId())
                 .isFamilyDoctor(doctor.isFamilyDoctor())
+                //.medicalReports(medicalReportService.getDoctorReportsForCustom(doctor.getId()))
                 .build();
     }
 
@@ -174,6 +176,7 @@ public class DoctorService {
                 .tc(doctorRequest.getTc())
                 .birthDate(doctorRequest.getBirthDate())
                 .name(doctorRequest.getName())
+                //.appointment(doctorRequest.get)
                 .dutyEndDate(doctorRequest.getDutyEndDate())
                 .dutyStartDate(doctorRequest.getDutyStartDate())
                 .phoneNumber(doctorRequest.getPhoneNumber())
@@ -182,11 +185,12 @@ public class DoctorService {
                 .id(id)
                 .startTime(doctorRequest.getStartTime())
                 .endTime(doctorRequest.getEndTime())
+                .medicalReports(getByIdForCustom(id).getMedicalReports())
                 .userRole(userRoleService.getUserRole(RoleType.DOCTOR))
                 .build();
     }
 
-    public Doctor getByIdForAppointment(Long doctorId) {
+    public Doctor getByIdForCustom(Long doctorId) {
         return doctorRepository.findById(doctorId).orElseThrow(()
                 -> new ResourceNotFoundException(String.format(Messages.NOT_FOUND_USER2_MESSAGE,doctorId)));
     }
@@ -201,5 +205,12 @@ public class DoctorService {
 
         return doctorRepository.findRandomDoctor().orElseThrow(()
         -> new ResourceNotFoundException(Messages.DOCTOR_NOT_FOUND_MESSAGE));
+    }
+
+    public DoctorResponse getDoctorResponseById(Long id) {
+
+        Doctor doctor = doctorRepository.findById(id).orElseThrow(() ->
+                new ResourceNotFoundException(String.format(Messages.NOT_FOUND_USER_MESSAGE)));
+        return createDoctorResponse(doctor);
     }
 }

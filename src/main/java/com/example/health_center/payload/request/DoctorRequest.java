@@ -1,5 +1,6 @@
 package com.example.health_center.payload.request;
 
+import com.example.health_center.entity.concretes.Appointment;
 import com.example.health_center.payload.request.abstracts.BaseUserRequest;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,6 +12,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.PastOrPresent;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -33,4 +35,7 @@ public class DoctorRequest extends BaseUserRequest {
 
     @NotNull(message = "End time is required")
     private LocalTime endTime;
+
+    //TODO update icin ayri bir request lazim
+    //private List<Appointment> appointments;
 }

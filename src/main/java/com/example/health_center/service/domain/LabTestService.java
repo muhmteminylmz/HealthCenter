@@ -1,7 +1,5 @@
-package com.example.health_center.service;
+package com.example.health_center.service.domain;
 
-import com.example.health_center.entity.concretes.Appointment;
-import com.example.health_center.entity.concretes.Doctor;
 import com.example.health_center.entity.concretes.Examination;
 import com.example.health_center.entity.concretes.LabTest;
 import com.example.health_center.exception.ResourceNotFoundException;
@@ -43,6 +41,8 @@ public class LabTestService {
         labTest.setExamination(examination);
 
         LabTest savedLabTest = labTestRepository.save(labTest);
+
+        examinationService.saveLabTestForExamination(savedLabTest);
 
         return ResponseMessage.<LabTestResponse>builder()
                 .message("LabTest Created")
@@ -167,9 +167,9 @@ public class LabTestService {
     public LabTest createUpdatedLabTestResponse(LabTestRequest newLabTest,Long labTestId){
         return LabTest.builder()
                 .id(labTestId)
-                //.testDate(newLabTest.getTestDate())
+                .testDate(newLabTest.getTestDate())
                 .testResult(newLabTest.getTestResult())
-                //.testType(newLabTest.getTestType())
+                .testType(newLabTest.getTestType())
                 .status(newLabTest.getStatus())
                 .price(newLabTest.getPrice())
                 .build();
