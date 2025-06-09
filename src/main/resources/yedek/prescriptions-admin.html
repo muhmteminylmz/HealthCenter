@@ -1,0 +1,109 @@
+<h2>Tüm Reçeteler (Admin)</h2>
+
+<button onclick="showAddForm()">Yeni Reçete Ekle</button>
+
+<div id="addForm" style="display:none;">
+    <h3>Reçete Ekle</h3>
+    <form id="prescriptionForm">
+        <input type="text" id="medicine" placeholder="İlaç Adı" required minlength="2" maxlength="16"/>
+        <input type="text" id="dosage" placeholder="Dozaj" required minlength="2" maxlength="10"/>
+        <input type="text" id="note" placeholder="Not" required minlength="1" maxlength="200"/>
+        <input type="number" id="patientId" placeholder="Hasta ID" required/>
+        <button type="submit">Kaydet</button>
+    </form>
+</div>
+
+<table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse; width: 100%;">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>İlaç</th>
+        <th>Dozaj</th>
+        <th>Not</th>
+        <th>Hasta ID</th>
+        <th>İşlemler</th>
+    </tr>
+    </thead>
+    <tbody id="prescriptionsBody">
+    <tr><td colspan="6">Yükleniyor...</td></tr>
+    </tbody>
+</table>
+
+<script>
+    const token = localStorage.getItem("token");
+    if (!token) window.location.href = "/login.html";
+
+    function loadPrescriptions() {
+      fetch("/prescription/getAll", {
+        headers: { "Authorization": "Bearer " + token }
+      })
+      .then(res => res.json())
+      .then(data => {
+        const tbody = document.getElementById("prescriptionsBody");
+        tbody.innerHTML = "";
+        if (data.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6">Reçete bulunmamaktadır.</td></tr>';
+          return;
+        }
+        data.forEach(p => {
+          tbody.innerHTML += `
+            <tr>
+              <td>${p.id}</td>
+              <td>${p.medicine}</td>
+              <td>${p.dosage}</td>
+              <td>${p.prescriptionNote}</td>
+              <td>${p.patientId}</td>
+              <td>
+                <button onclick="deletePrescription(${p.id})">Sil</button>
+              </td>
+            </tr>`;
+        });
+      });
+    }
+
+    function showAddForm() {
+      document.getElementById("addForm").style.display = "block";
+    }
+
+    document.getElementById("prescriptionForm").addEventListener("submit", e => {
+      e.preventDefault();
+      const prescription = {
+        medicine: document.getElementById("medicine").value,
+        dosage: document.getElementById("dosage").value,
+        prescriptionNote: document.getElementById("note").value,
+        patientId: Number(document.getElementById("patientId").value)
+      };
+
+      fetch("/prescription/save", {
+        method: "POST",
+        headers: {
+          "Authorization": "Bearer " + token,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(prescription)
+      })
+      .then(res => {
+        if (!res.ok) throw new Error("Reçete eklenemedi.");
+        alert("Reçete eklendi.");
+        loadPrescriptions();
+        document.getElementById("addForm").style.display = "none";
+      })
+      .catch(e => alert(e.message));
+    });
+
+    function deletePrescription(id) {
+      if (!confirm("Reçeteyi silmek istediğinize emin misiniz?")) return;
+      fetch(`/prescription/delete/${id}`, {
+        method: "DELETE",
+        headers: { "Authorization": "Bearer " + token }
+      })
+      .then(res => {
+        if (!res.ok) throw new Error("Silme işlemi başarısız.");
+        alert("Reçete silindi.");
+        loadPrescriptions();
+      })
+      .catch(e => alert(e.message));
+    }
+
+    loadPrescriptions();
+</script>

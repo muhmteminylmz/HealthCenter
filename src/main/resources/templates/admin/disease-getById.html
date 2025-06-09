@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8" />
+    <title>Hastalık Detayı (Admin)</title>
+</head>
+<body>
+
+<h3>Hastalık Detayı (Admin)</h3>
+
+<label for="diseaseIdInput">Hastalık ID'si Girin:</label>
+<input type="number" id="diseaseIdInput" />
+<button onclick="getDiseaseById()">Getir</button>
+
+<div id="diseaseDetail" style="margin-top: 20px;"></div>
+<p id="errorMessage" style="color: red;"></p>
+
+<script>
+    const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
+
+    if (!token || role !== "ADMIN") {
+        alert("Bu sayfaya erişim yetkiniz yok!");
+        window.location.href = "static/login.html";
+    }
+
+    function getDiseaseById() {
+        const id = document.getElementById("diseaseIdInput").value;
+        if (!id) {
+            alert("Lütfen geçerli bir ID giriniz.");
+            return;
+        }
+
+        fetch(`http://localhost:8080/diseases/${id}`, {
+            headers: {
+                "Authorization": "Bearer " + token
+            }
+        })
+        .then(res => {
+            if (!res.ok) {
+                throw new Error("Hastalık bulunamadı.");
+            }
+            return res.json();
+        })
+        .then(responseMessage => {
+            if(responseMessage.success === false){
+                throw new Error(responseMessage.message || "Hastalık bulunamadı.");
+            }
+            const d = responseMessage.data;
+            const detailDiv = document.getElementById("diseaseDetail");
+            detailDiv.innerHTML = `
+                <p><b>ID:</b> ${d.id}</p>
+                <p><b>Adı:</b> ${d.name}</p>
+                <p><b>Kod:</b> ${d.code}</p>
+            `;
+        })
+        .catch(error => {
+            document.getElementById("errorMessage").innerText = error.message;
+            document.getElementById("diseaseDetail").innerHTML = "";
+        });
+    }
+</script>
+
+</body>
+</html>

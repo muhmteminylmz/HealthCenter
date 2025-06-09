@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8" />
+    <title>Alerji Ekle</title>
+</head>
+<body>
+<h3>Hasta Alerji Ekle</h3>
+
+<form id="allergyForm">
+    <label>Alerjiler:
+        <select name="allergyIds" multiple>
+            <option value="1">Penisilin</option>
+            <option value="2">Lateks</option>
+            <option value="3">Polen</option>
+            <option value="4">Yılan</option>
+        </select>
+    </label><br/>
+    <button type="submit">Kaydet</button>
+</form>
+
+<p id="message" style="color: red;"></p>
+
+<script>
+    const token = localStorage.getItem("token");
+    const patientId = new URLSearchParams(window.location.search).get("id");
+
+    if (!token || !patientId) window.location.href = "/login.html";
+
+    document.getElementById("allergyForm").addEventListener("submit", function(e) {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+
+        const allergyData = {
+            allergyIds: Array.from(formData.getAll("allergyIds"))
+        };
+
+        fetch(`/patient/${patientId}/allergies`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + token
+            },
+            body: JSON.stringify(allergyData)
+        })
+        .then(res => {
+            if (!res.ok) throw new Error("Alerji eklenemedi.");
+            return res.json();
+        })
+        .then(data => {
+            document.getElementById("message").style.color = "green";
+            document.getElementById("message").innerText = "Alerji başarıyla eklendi.";
+        })
+        .catch(err => {
+            document.getElementById("message").style.color = "red";
+            document.getElementById("message").innerText = err.message;
+        });
+    });
+</script>
+</body>
+</html>

@@ -97,4 +97,6 @@ public class Messages {
             "Error: Patient already has these allergies: ";
     public static final String NOT_FOUND_MEDICAL_REPORT =
             "Error: Medical Report with id %s not found";
+    public static final String APPOINTMENT_DUPLICATE_MESSAGE =
+            "Error: Same appointment cant be use for 2 examinations";
 }

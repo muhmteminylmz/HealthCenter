@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8" />
+    <title>Reçeteyi Güncelle</title>
+</head>
+<body>
+<h3>Reçeteyi Güncelle</h3>
+
+<form id="updatePrescriptionForm">
+    <label>Reçete ID:
+        <input type="number" name="prescriptionId" required />
+    </label><br/>
+    <label>İlaç Adı:
+        <input type="text" name="medicine" required />
+    </label><br/>
+    <label>Dozaj:
+        <input type="text" name="dosage" required />
+    </label><br/>
+    <label>Reçete Notu:
+        <textarea name="prescriptionNote" required></textarea>
+    </label><br/>
+    <button type="submit">Reçeteyi Güncelle</button>
+</form>
+
+<p id="message" style="color: red;"></p>
+
+<script>
+    const token = localStorage.getItem("token");
+
+    if (!token) window.location.href = "/login.html";
+
+    document.getElementById("updatePrescriptionForm").addEventListener("submit", function(e) {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const prescriptionId = formData.get("prescriptionId");
+
+        const prescriptionData = {
+            medicine: formData.get("medicine"),
+            dosage: formData.get("dosage"),
+            prescriptionNote: formData.get("prescriptionNote")
+        };
+
+        fetch(`/prescription/update/${prescriptionId}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + token
+            },
+            body: JSON.stringify(prescriptionData)
+        })
+        .then(res => {
+            if (!res.ok) throw new Error("Reçete güncellenemedi.");
+            return res.json();
+        })
+        .then(data => {
+            document.getElementById("message").style.color = "green";
+            document.getElementById("message").innerText = "Reçete başarıyla güncellendi.";
+        })
+        .catch(err => {
+            document.getElementById("message").style.color = "red";
+            document.getElementById("message").innerText = err.message;
+        });
+    });
+</script>
+</body>
+</html>

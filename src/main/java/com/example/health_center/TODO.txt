@@ -8,3 +8,4 @@ Acil Durum Notlarim -
 
 Authority
 JSONIgnore
+Context ten veri alma

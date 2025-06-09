@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8" />
+    <title>Tüm Randevular (Admin)</title>
+</head>
+<body>
+<h3>Tüm Randevular</h3>
+
+<table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse; width: 100%;">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Tarih</th>
+        <th>Durum</th>
+        <th>İptal Nedeni</th>
+        <th>Hasta</th>
+        <th>Doktor</th>
+        <th>İşlemler</th>
+    </tr>
+    </thead>
+    <tbody id="appointmentBody">
+    <tr><td colspan="7">Yükleniyor...</td></tr>
+    </tbody>
+</table>
+
+<p id="errorMessage" style="color: red;"></p>
+
+<script>
+    const token = localStorage.getItem("token");
+    if (!token) window.location.href = "static/login.html";
+
+    async function loadAppointments() {
+        try {
+            const res = await fetch('http://localhost:8080/appointment/getAll', {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            if (!res.ok) throw new Error('Randevular alınamadı.');
+
+            const appointments = await res.json();
+            const tbody = document.getElementById('appointmentBody');
+            tbody.innerHTML = '';
+
+            if (appointments.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7">Randevu bulunmamaktadır.</td></tr>';
+                return;
+            }
+
+            appointments.forEach(a => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${a.id}</td>
+                        <td>${new Date(a.appointmentDate).toLocaleString('tr-TR')}</td>
+                        <td>${a.status}</td>
+                        <td>${a.cancellationReason ? a.cancellationReason : '-'}</td>
+                        <td>${a.patientName}</td>
+                        <td>${a.doctorName}</td>
+                        <td><button onclick="deleteAppointment(${a.id})">Sil</button></td>
+                    </tr>
+                `;
+            });
+        } catch (err) {
+            document.getElementById('errorMessage').innerText = err.message;
+        }
+    }
+
+    async function deleteAppointment(id) {
+        if (!confirm('Randevuyu silmek istediğinize emin misiniz?')) return;
+
+        try {
+            const res = await fetch(`http://localhost:8080/appointment/delete/${id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.message || 'Silme işlemi başarısız.');
+
+            alert('Randevu silindi.');
+            loadAppointments();
+        } catch (err) {
+            alert(err.message);
+        }
+    }
+
+    loadAppointments();
+</script>
+</body>
+</html>

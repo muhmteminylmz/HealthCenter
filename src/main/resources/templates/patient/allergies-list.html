@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8" />
+    <title>Alerjilerim</title>
+</head>
+<body>
+<h3>Alerjilerim</h3>
+
+<table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse; width: 100%;">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Alerji Adı</th>
+        <th>Kod</th>
+    </tr>
+    </thead>
+    <tbody id="allergyBody">
+    <tr><td colspan="3">Yükleniyor...</td></tr>
+    </tbody>
+</table>
+
+<p id="errorMessage" style="color: red;"></p>
+
+<script>
+    const token = localStorage.getItem("token");
+    if (!token) window.location.href = "static/login.html";
+
+    // JWT içinden userId alma fonksiyonu (aynı senin önceki örneklerdeki gibi)
+    function getUserIdFromToken() {
+        const token = localStorage.getItem("token");
+        if (!token) return null;
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        return payload.id;
+    }
+
+    fetch(`http://localhost:8080/allergies/getByPatient`, {
+        headers: {
+            "Authorization": "Bearer " + token
+        }
+    })
+    .then(res => {
+        if (!res.ok) throw new Error("Alerjiler alınamadı.");
+        return res.json();
+    })
+    .then(allergies => {
+        const tbody = document.getElementById("allergyBody");
+        tbody.innerHTML = "";
+
+        if (allergies.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="3">Alerji kaydınız bulunmamaktadır.</td></tr>`;
+            return;
+        }
+
+        allergies.forEach(a => {
+            tbody.innerHTML += `
+                <tr>
+                    <td>${a.id}</td>
+                    <td>${a.name}</td>
+                    <td>${a.code}</td>
+                </tr>
+            `;
+        });
+    })
+    .catch(err => {
+        document.getElementById("errorMessage").innerText = err.message;
+    });
+</script>
+</body>
+</html>

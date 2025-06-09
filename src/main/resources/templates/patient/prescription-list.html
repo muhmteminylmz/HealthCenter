@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8" />
+    <title>Reçetelerim</title>
+</head>
+<body>
+<h3>Reçetelerim</h3>
+
+<div id="prescriptionsList"></div>
+
+<script>
+    const token = localStorage.getItem("token");
+
+    if (!token) window.location.href = "static/login.html";
+
+    fetch("http://localhost:8080/prescription/getPrescriptionsByPatient", {
+        headers: {
+            "Authorization": "Bearer " + token
+        }
+    })
+    .then(res => res.ok ? res.json() : Promise.reject("Reçeteler bulunamadı"))
+    .then(prescriptions => {
+        const container = document.getElementById("prescriptionsList");
+        if (prescriptions.length === 0) {
+            container.innerText = "Henüz herhangi bir reçete kaydedilmemiş.";
+        } else {
+            const list = prescriptions.map(prescription => `
+                <div>
+                    <p><strong>İlaç:</strong> ${prescription.medicine}</p>
+                    <p><strong>Dozaj:</strong> ${prescription.dosage}</p>
+                    <p><strong>Not:</strong> ${prescription.prescriptionNote}</p>
+                    <p><strong>Doktor:</strong> ${prescription.doctorName}</p>
+                    <p><strong>Takip Tarihi:</strong> ${new Date(prescription.followUpDate).toLocaleDateString("tr-TR")}</p>
+                </div>
+            `).join('');
+            container.innerHTML = list;
+        }
+    })
+    .catch(err => {
+        document.getElementById("prescriptionsList").innerText = err;
+    });
+</script>
+
+</body>
+</html>

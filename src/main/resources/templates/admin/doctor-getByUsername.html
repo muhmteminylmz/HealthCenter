@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8" />
+    <title>Doktor Bilgisi - Kullanıcı Adı ile (Admin & ChiefDoctor)</title>
+</head>
+<body>
+
+<h3>Kullanıcı Adı ile Doktor Bilgisi</h3>
+
+<label for="usernameInput">Kullanıcı Adı:</label>
+<input type="text" id="usernameInput" />
+<button onclick="getDoctorByUsername()">Getir</button>
+
+<div id="doctorDetail" style="margin-top: 20px;"></div>
+<p id="errorMessage" style="color: red;"></p>
+
+<script>
+    const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
+
+    if (!token || (role !== "ADMIN" && role !== "CHIEFDOCTOR")) {
+      alert("Bu sayfaya erişim yetkiniz yok!");
+      window.location.href = "static/login.html";
+    }
+
+    function getDoctorByUsername() {
+      const username = document.getElementById("usernameInput").value.trim();
+      if (!username) {
+        alert("Lütfen kullanıcı adı giriniz.");
+        return;
+      }
+
+      fetch(`http://localhost:8080/doctor/getByUsername?username=${encodeURIComponent(username)}`, {
+        headers: { "Authorization": "Bearer " + token }
+      })
+      .then(res => {
+        if (!res.ok) throw new Error("Doktor bulunamadı.");
+        return res.json();
+      })
+      .then(responseMessage => {
+        if(responseMessage.success === false){
+          throw new Error(responseMessage.message || "Doktor bulunamadı.");
+        }
+        const d = responseMessage.data;
+        const detailDiv = document.getElementById("doctorDetail");
+        detailDiv.innerHTML = `
+          <p><b>ID:</b> ${d.id}</p>
+          <p><b>Ad Soyad:</b> ${d.name} ${d.surname}</p>
+          <p><b>Family Doctor:</b> ${d.familyDoctor ? "Evet" : "Hayır"}</p>
+          <p><b>Görev Başlangıcı:</b> ${d.dutyStartDate}</p>
+          <p><b>Görev Bitişi:</b> ${d.dutyEndDate}</p>
+          <p><b>Başlangıç Saati:</b> ${d.startTime}</p>
+          <p><b>Bitiş Saati:</b> ${d.endTime}</p>
+        `;
+      })
+      .catch(err => {
+        document.getElementById("errorMessage").innerText = err.message;
+        document.getElementById("doctorDetail").innerHTML = "";
+      });
+    }
+</script>
+
+</body>
+</html>

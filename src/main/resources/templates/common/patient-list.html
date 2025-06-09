@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8" />
+    <title>Hasta Listele</title>
+    <style>
+        /* Basit modal stili */
+        #detailModal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0; top: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+        }
+        #detailContent {
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            width: 300px;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+        }
+        #closeModal {
+            position: absolute;
+            top: 5px; right: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+<h3>Tüm Hastalar</h3>
+
+<table id="patientTable" border="1" cellpadding="5" cellspacing="0">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>İsim</th>
+        <th>Soyisim</th>
+        <th>Telefon</th>
+        <th>Detay</th>
+    </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<!-- Modal -->
+<div id="detailModal">
+    <div id="detailContent">
+        <span id="closeModal">&times;</span>
+        <div id="patientDetails">Yükleniyor...</div>
+    </div>
+</div>
+
+<script>
+    const token = localStorage.getItem("token");
+
+    if (!token) window.location.href = "static/login.html";
+
+    const tableBody = document.querySelector("#patientTable tbody");
+    const modal = document.getElementById("detailModal");
+    const detailDiv = document.getElementById("patientDetails");
+    const closeModalBtn = document.getElementById("closeModal");
+
+    // Hasta listesini çek
+    fetch("http://localhost:8080/patient/getAll", {
+        headers: {
+            "Authorization": "Bearer " + token
+        }
+    })
+    .then(res => res.ok ? res.json() : Promise.reject("Hastalar alınamadı"))
+    .then(patients => {
+        patients.forEach(patient => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td>${patient.userId}</td>
+                <td>${patient.name}</td>
+                <td>${patient.surname}</td>
+                <td>${patient.phoneNumber}</td>
+                <td><button data-id="${patient.userId}">Detay</button></td>
+            `;
+            tableBody.appendChild(row);
+        });
+
+        // Detay butonlarına tıklama olayını ekle
+        tableBody.addEventListener("click", e => {
+            if (e.target.tagName === "BUTTON") {
+                const id = e.target.getAttribute("data-id");
+                openDetailModal(id);
+            }
+        });
+    })
+    .catch(err => {
+        document.body.innerHTML = `<p style="color: red;">${err}</p>`;
+    });
+
+    // Modal kapatma
+    closeModalBtn.onclick = () => {
+        modal.style.display = "none";
+    };
+    // Modal dışına tıklayınca kapat
+    window.onclick = event => {
+        if (event.target === modal) {
+            modal.style.display = "none";
+        }
+    };
+
+    function openDetailModal(patientId) {
+        modal.style.display = "flex";
+        detailDiv.innerHTML = "Yükleniyor...";
+
+        fetch(`http://localhost:8080/patient/getById/${patientId}`, {
+            headers: {
+                "Authorization": "Bearer " + token
+            }
+        })
+        .then(res => res.ok ? res.json() : Promise.reject("Hasta bulunamadı"))
+        .then(patient => {
+            detailDiv.innerHTML = `
+                <p><strong>ID:</strong> ${patient.userId}</p>
+                <p><strong>İsim:</strong> ${patient.name}</p>
+                <p><strong>Soyisim:</strong> ${patient.surname}</p>
+                <p><strong>Doğum Tarihi:</strong> ${new Date(patient.birthDate).toLocaleDateString("tr-TR")}</p>
+                <p><strong>TC No:</strong> ${patient.tc}</p>
+                <p><strong>Telefon:</strong> ${patient.phoneNumber}</p>
+                <p><strong>Cinsiyet:</strong> ${patient.gender}</p>
+                <p><strong>Kan Grubu:</strong> ${patient.bloodType}</p>
+                <p><strong>Aile Doktoru ID:</strong> ${patient.familyDoctorId}</p>
+            `;
+        })
+        .catch(err => {
+            detailDiv.innerText = err;
+        });
+    }
+</script>
+</body>
+</html>

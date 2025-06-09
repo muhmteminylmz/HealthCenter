@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8" />
+    <title>Reçete Ekle</title>
+</head>
+<body>
+<h3>Reçete Ekle</h3>
+
+<form id="prescriptionForm">
+    <label>İlaç Adı:
+        <input type="text" name="medicine" required />
+    </label><br/>
+    <label>Dozaj:
+        <input type="text" name="dosage" required />
+    </label><br/>
+    <label>Reçete Notu:
+        <textarea name="prescriptionNote" required></textarea>
+    </label><br/>
+    <label>Hasta ID:
+        <input type="number" name="patientId" required />
+    </label><br/>
+    <button type="submit">Reçeteyi Ekle</button>
+</form>
+
+<p id="message" style="color: red;"></p>
+
+<script>
+    const token = localStorage.getItem("token");
+
+    if (!token) window.location.href = "static/login.html";
+
+    document.getElementById("prescriptionForm").addEventListener("submit", function(e) {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+
+        const prescriptionData = {
+            medicine: formData.get("medicine"),
+            dosage: formData.get("dosage"),
+            prescriptionNote: formData.get("prescriptionNote"),
+            patientId: formData.get("patientId")
+        };
+
+        fetch("http://localhost:8080/prescription/save", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + token
+            },
+            body: JSON.stringify(prescriptionData)
+        })
+        .then(res => {
+            if (!res.ok) throw new Error("Reçete eklenemedi.");
+            return res.json();
+        })
+        .then(data => {
+            document.getElementById("message").style.color = "green";
+            document.getElementById("message").innerText = "Reçete başarıyla eklendi.";
+        })
+        .catch(err => {
+            document.getElementById("message").style.color = "red";
+            document.getElementById("message").innerText = err.message;
+        });
+    });
+</script>
+</body>
+</html>

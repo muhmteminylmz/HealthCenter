@@ -151,6 +151,19 @@ public class AppointmentService {
                 .status(AppointmentStatus.SCHEDULED)
                 .patientId(appointment.getPatient().getId())
                 .patientName(appointment.getPatient().getName())
+                .cancellationReason(appointment.getCancellationReason())
+                .build();
+    }
+
+    public AppointmentResponse createAppointmentResponseForExamination(Appointment appointment){
+        return AppointmentResponse.builder()
+                .doctorId(appointment.getDoctor().getId())
+                .doctorName(appointment.getDoctor().getName())
+                .appointmentDate(appointment.getAppointmentDate())
+                .id(appointment.getId())
+                .status(AppointmentStatus.SCHEDULED)
+                .patientId(appointment.getPatient().getId())
+                .patientName(appointment.getPatient().getName())
                 .examinationId(appointment.getExamination().getId())
                 .cancellationReason(appointment.getCancellationReason())
                 .build();

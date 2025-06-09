@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8" />
+    <title>Aile Doktoru Detayı</title>
+</head>
+<body>
+
+<h3>Aile Doktoru Detayı</h3>
+
+<label>Aile Doktoru ID: <input type="number" id="familyDoctorId" required /></label>
+<button id="fetchBtn">Getir</button>
+
+<div id="details" style="margin-top:20px;"></div>
+<p id="errorMessage" style="color: red;"></p>
+
+<script>
+    const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
+
+    if (!token || !["ADMIN","CHIEFDOCTOR"].includes(role)) {
+        alert("Bu sayfaya erişim yetkiniz yok!");
+        window.location.href = "/common/login.html";
+    }
+
+    document.getElementById("fetchBtn").addEventListener("click", () => {
+        const id = document.getElementById("familyDoctorId").value;
+        if (!id) {
+            alert("Lütfen geçerli bir ID giriniz.");
+            return;
+        }
+
+        fetch(`/familyDoctor/getById/${id}`, {
+            headers: {
+                "Authorization": "Bearer " + token
+            }
+        })
+        .then(res => {
+            if (!res.ok) {
+                return res.json().then(data => Promise.reject(data.message || "Veri alınamadı"));
+            }
+            return res.json();
+        })
+        .then(response => {
+            const fd = response.data;
+            let html = `
+                <p><strong>ID:</strong> ${fd.id}</p>
+                <p><strong>Doktor ID:</strong> ${fd.doctorId}</p>
+                <p><strong>Hasta ID'leri:</strong> ${fd.patientIds.length > 0 ? fd.patientIds.join(", ") : "-"}</p>
+            `;
+            document.getElementById("details").innerHTML = html;
+            document.getElementById("errorMessage").innerText = "";
+        })
+        .catch(err => {
+            document.getElementById("errorMessage").innerText = err;
+            document.getElementById("details").innerHTML = "";
+        });
+    });
+</script>
+
+</body>
+</html>

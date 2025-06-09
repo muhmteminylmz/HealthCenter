@@ -13,12 +13,14 @@ import com.example.health_center.utils.CheckParameterUpdateMethod;
 import com.example.health_center.utils.FieldControl;
 import com.example.health_center.utils.Messages;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,7 +31,7 @@ public class PatientService {
     private final PatientRepository patientRepository;
     private final FamilyDoctorService familyDoctorService;
     private final AllergyService allergyService;
-    private final MedicalReportService medicalReportService;
+    //private final MedicalReportService medicalReportService;
     private final FieldControl fieldControl;
     private final PasswordEncoder passwordEncoder;
     private final UserRoleService userRoleService;
@@ -160,8 +162,9 @@ public class PatientService {
                 .userName(patient.getUsername())
                 .userId(patient.getId())
                 .bloodType(patient.getBloodType())
-                .allergies(allergyService.createAllergyResponseList(patient.getAllergies()))
-                .medicalReports(medicalReportService.getPatientReportsForCustom(patient.getId()))
+                .allergies(allergyService.createAllergyResponseList(
+                                patient.getAllergies() == null ? Collections.emptyList() : patient.getAllergies()))
+                //TODO bence buna burda gerek yok .medicalReports(medicalReportService.getPatientReportsForCustom(patient.getId()))
                 //TODO .familyDoctorId(patient.getFamilyDoctor() != null ? patient.getFamilyDoctor().getId() : null)
                 .familyDoctorId(patient.getFamilyDoctor().getId())
                 .build();

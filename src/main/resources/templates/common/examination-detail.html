@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8" />
+    <title>Muayene Detayı</title>
+</head>
+<body>
+
+<h3>Muayene Detayı</h3>
+
+<div id="examinationDetails">
+    Yükleniyor...
+</div>
+
+<p id="errorMessage" style="color:red;"></p>
+
+<script>
+    const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
+
+    if (!token || !["ADMIN", "DOCTOR", "CHIEFDOCTOR"].includes(role)) {
+        alert("Bu sayfaya erişim yetkiniz yok!");
+        window.location.href = "/common/login.html";
+    }
+
+    // URL parametresinden id al
+    const urlParams = new URLSearchParams(window.location.search);
+    const examId = urlParams.get('id');
+
+    if (!examId) {
+        document.getElementById('examinationDetails').innerText = "Geçerli bir muayene ID'si bulunamadı.";
+    } else {
+        fetch(`/examination/getById/${examId}`, {
+            headers: {
+                "Authorization": "Bearer " + token
+            }
+        })
+        .then(res => res.ok ? res.json() : Promise.reject("Muayene bulunamadı"))
+        .then(data => {
+            const exam = data.data;
+            let html = `
+                <p><strong>ID:</strong> ${exam.id}</p>
+                <p><strong>Muayene Tarihi:</strong> ${new Date(exam.examinationDate).toLocaleString("tr-TR")}</p>
+                <p><strong>Tanı:</strong> ${exam.diagnosis || "-"}</p>
+                <p><strong>Hasta:</strong> ${exam.patient?.name || "-" } ${exam.patient?.surname || ""}</p>
+                <p><strong>Doktor:</strong> ${exam.doctors?.name || "-"} ${exam.doctors?.surname || ""}</p>
+                <p><strong>Alerjiler:</strong> ${
+                    exam.allergies && exam.allergies.length > 0 ? exam.allergies.map(a => a.name).join(", ") : "-"
+                }</p>
+                <p><strong>Hastalıklar:</strong> ${
+                    exam.diseases && exam.diseases.length > 0 ? exam.diseases.map(d => d.name).join(", ") : "-"
+                }</p>
+            `;
+            document.getElementById('examinationDetails').innerHTML = html;
+        })
+        .catch(err => {
+            document.getElementById('errorMessage').innerText = err;
+            document.getElementById('examinationDetails').innerText = "";
+        });
+    }
+</script>
+
+</body>
+</html>

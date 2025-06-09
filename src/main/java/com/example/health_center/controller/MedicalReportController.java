@@ -21,27 +21,27 @@ public class MedicalReportController {
     private final MedicalReportService medicalReportService;
 
     @PostMapping("/save")
-    @PreAuthorize("hasRole('DOCTOR')")
+    @PreAuthorize("hasAnyAuthority('DOCTOR')")
     public ResponseMessage<?> save(@RequestBody @Valid MedicalReportRequest medicalReportRequest) {
         return medicalReportService.saveMedicalReport(medicalReportRequest);
     }
 
     @GetMapping("/patient/reports")
-    @PreAuthorize("hasRole('PATIENT')")
+    @PreAuthorize("hasAnyAuthority('PATIENT')")
     public List<MedicalReportResponse> getReportsForPatient(@AuthenticationPrincipal UserDetailsImpl currentUser) {
         return medicalReportService.getPatientReports(currentUser);
     }
 
 
     @GetMapping("/doctor/reports")
-    @PreAuthorize("hasRole('DOCTOR')")
+    @PreAuthorize("hasAnyAuthority('DOCTOR')")
     public List<MedicalReportResponse> getReportsForDoctor(@AuthenticationPrincipal UserDetailsImpl currentUser) {
         return medicalReportService.getDoctorReports(currentUser);
     }
 
 
-    @GetMapping("/delete/{reportId}")
-    @PreAuthorize("hasRole('DOCTOR','ADMIN')")
+    @DeleteMapping("/delete/{reportId}")
+    @PreAuthorize("hasAnyAuthority('DOCTOR','ADMIN')")
     public ResponseMessage<?> delete(@PathVariable @Valid Long reportId) {
         return medicalReportService.deleteMedicalReport(reportId);
     }

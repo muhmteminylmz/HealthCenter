@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8" />
+    <title>Hemşire Detayı</title>
+</head>
+<body>
+<h3>Hemşire Detayı</h3>
+
+<div id="nurseDetails"></div>
+
+<script>
+    const token = localStorage.getItem("token");
+    const nurseId = new URLSearchParams(window.location.search).get("id");
+
+    // Eğer token yoksa ya da id bulunamazsa login sayfasına yönlendir
+    if (!token || !nurseId) window.location.href = "/login.html";
+
+    fetch(`/nurse/getById/${nurseId}`, {
+        headers: {
+            "Authorization": "Bearer " + token
+        }
+    })
+    .then(res => res.ok ? res.json() : Promise.reject("Hemşire bulunamadı"))
+    .then(nurse => {
+        const container = document.getElementById("nurseDetails");
+
+        // Backend'den gelen verileri olduğu gibi kullan
+        container.innerHTML = `
+            <p><strong>ID:</strong> ${nurse.data.id}</p>
+            <p><strong>İsim:</strong> ${nurse.data.name}</p>
+            <p><strong>Soyisim:</strong> ${nurse.data.surname}</p>
+            <p><strong>Doğum Tarihi:</strong> ${nurse.data.birthDate}</p>
+            <p><strong>TC No:</strong> ${nurse.data.tc}</p>
+            <p><strong>Telefon:</strong> ${nurse.data.phoneNumber}</p>
+            <p><strong>Cinsiyet:</strong> ${nurse.data.gender}</p>
+            <p><strong>Görev Başlangıç Tarihi:</strong> ${nurse.data.dutyStartDate}</p>
+            <p><strong>Görev Bitiş Tarihi:</strong> ${nurse.data.dutyEndDate}</p>
+            <p><strong>Başlangıç Saati:</strong> ${nurse.data.startTime}</p>
+            <p><strong>Bitiş Saati:</strong> ${nurse.data.endTime}</p>
+        `;
+    })
+    .catch(err => {
+        document.getElementById("nurseDetails").innerText = err;
+    });
+</script>
+</body>
+</html>

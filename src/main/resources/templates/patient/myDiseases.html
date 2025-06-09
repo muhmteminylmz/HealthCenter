@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8" />
+    <title>Hastalıklarım</title>
+</head>
+<body>
+<h3>Hastalıklarım</h3>
+
+<div id="diseasesList"></div>
+
+<script>
+    const token = localStorage.getItem("token");
+
+    // Eğer token yoksa ya da id bulunamazsa login sayfasına yönlendir
+    if (!token) window.location.href = "static/login.html";
+
+    fetch(`http://localhost:8080/patient-diseases/by-patient`, {
+        headers: {
+            "Authorization": "Bearer " + token
+        }
+    })
+    .then(res => res.ok ? res.json() : Promise.reject("Hastalıklar bulunamadı"))
+    .then(diseases => {
+        const container = document.getElementById("diseasesList");
+        if (diseases.length === 0) {
+            container.innerText = "Henüz herhangi bir hastalık kaydedilmemiş.";
+        } else {
+            const list = diseases.map(disease => `
+                <div>
+                    <p><strong>Hastalık:</strong> ${disease.disease.name}</p>
+                    <p><strong>Tanı Tarihi:</strong> ${new Date(disease.diagnosisDate).toLocaleDateString("tr-TR")}</p>
+                </div>
+            `).join('');
+            container.innerHTML = list;
+        }
+    })
+    .catch(err => {
+        document.getElementById("diseasesList").innerText = err;
+    });
+</script>
+
+</body>
+</html>

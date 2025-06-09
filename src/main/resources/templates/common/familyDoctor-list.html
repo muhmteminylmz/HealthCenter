@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8" />
+    <title>Aile Doktorları Listesi</title>
+</head>
+<body>
+
+<h3>Aile Doktorları</h3>
+
+<table border="1" cellpadding="8" cellspacing="0">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Doktor ID</th>
+        <th>Hasta ID'leri</th>
+    </tr>
+    </thead>
+    <tbody id="familyDoctorBody">
+    <tr><td colspan="3">Yükleniyor...</td></tr>
+    </tbody>
+</table>
+
+<p id="errorMessage" style="color: red;"></p>
+
+<script>
+    const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
+
+    if (!token || !["ADMIN","CHIEFDOCTOR"].includes(role)) {
+        alert("Bu sayfaya erişim yetkiniz yok!");
+        window.location.href = "/common/login.html";
+    }
+
+    fetch("/familyDoctor/getAll", {
+        headers: {
+            "Authorization": "Bearer " + token
+        }
+    })
+    .then(res => res.ok ? res.json() : Promise.reject("Veri alınamadı"))
+    .then(data => {
+        const tbody = document.getElementById("familyDoctorBody");
+        tbody.innerHTML = "";
+
+        if (data.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="3">Kayıtlı aile doktoru yok.</td></tr>`;
+            return;
+        }
+
+        data.forEach(fd => {
+            tbody.innerHTML += `
+                <tr>
+                    <td>${fd.id}</td>
+                    <td>${fd.doctorId}</td>
+                    <td>${fd.patientIds.length > 0 ? fd.patientIds.join(", ") : "-"}</td>
+                </tr>
+            `;
+        });
+    })
+    .catch(err => {
+        document.getElementById("errorMessage").innerText = err;
+    });
+</script>
+
+</body>
+</html>

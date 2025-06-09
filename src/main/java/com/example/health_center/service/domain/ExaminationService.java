@@ -46,6 +46,8 @@ public class ExaminationService {
              throw new ResourceNotFoundException(String.format(Messages.APPOINTMENT_NOT_HAS_MESSAGE,username));
          } else if (appointments.stream().noneMatch(t -> t.equals(appointment))) {
              throw new ResourceNotFoundException(String.format(Messages.INCORRECT_APPOINTMENT_MESSAGE,username));
+         } else if (appointments.stream().noneMatch(t -> t.getId().equals(appointment.getId()))) {
+             throw new ResourceNotFoundException(Messages.APPOINTMENT_DUPLICATE_MESSAGE);
          }
 
 
@@ -190,7 +192,7 @@ public class ExaminationService {
                 .doctors(doctorService.createDoctorResponse(examination.getDoctor()))
                 .patient(patientService.createPatientResponse(examination.getPatient()))
                 .nurses(nurseService.createNurseResponseList(examination.getNurses()))
-                .appointment(appointmentService.createAppointmentResponse(examination.getAppointment()))
+                .appointment(appointmentService.createAppointmentResponseForExamination(examination.getAppointment()))
                 .build();
     }
 

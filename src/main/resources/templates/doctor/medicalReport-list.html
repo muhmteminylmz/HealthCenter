@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8" />
+    <title>Hasta Raporları</title>
+</head>
+<body>
+<h3>Hasta Raporları</h3>
+
+<table border="1" id="reportsTable">
+    <thead>
+    <tr>
+        <th>Rapor Adı</th>
+        <th>Açıklama</th>
+        <th>Başlangıç Tarihi</th>
+        <th>Bitiş Tarihi</th>
+        <th>Tanı</th>
+        <th>Doktor</th>
+    </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<p id="message" style="color: red;"></p>
+
+<script>
+    const token = localStorage.getItem("token");
+    if (!token) window.location.href = "/login.html";
+
+    fetch("/medical-report/doctor/reports", {
+    headers: {
+        "Authorization": "Bearer " + token
+    }
+})
+    .then(res => {
+        if (!res.ok) throw new Error("Raporlar getirilemedi.");
+        return res.json();
+    })
+    .then(data => {
+        const tbody = document.querySelector("#reportsTable tbody");
+        tbody.innerHTML = "";
+
+        data.forEach(report => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td>${report.name}</td>
+                <td>${report.description || "-"}</td>
+                <td>${report.startDate}</td>
+                <td>${report.endDate}</td>
+                <td>${report.diagnosis?.name || "-"}</td>
+                <td>${report.doctor?.name || "-"}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        if(data.length === 0) {
+            document.getElementById("message").innerText = "Rapor bulunamadı.";
+        }
+    })
+    .catch(err => {
+        document.getElementById("message").style.color = "red";
+        document.getElementById("message").innerText = err.message;
+    });
+</script>
+</body>
+</html>

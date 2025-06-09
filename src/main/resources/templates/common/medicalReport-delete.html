@@ -1,0 +1,21 @@
+<button onclick="deleteReport(5)">Sil</button>
+
+<script>
+    function deleteReport(reportId) {
+        const token = localStorage.getItem("token");
+        if(!token) return window.location.href = "/login.html";
+
+        fetch(`/medical-report/delete/${reportId}`, {
+            method: "GET",
+            headers: {
+                "Authorization": "Bearer " + token
+            }
+        })
+        .then(res => {
+            if (!res.ok) throw new Error("Rapor silinemedi.");
+            alert("Rapor başarıyla silindi.");
+            // İstersen burada listeyi yenileyebilirsin
+        })
+        .catch(err => alert(err.message));
+    }
+</script>

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8" />
+    <title>Yeni Laboratuvar Testi Ekle</title>
+</head>
+<body>
+
+<h3>Yeni Laboratuvar Testi Kaydet</h3>
+
+<form id="labTestForm">
+    <label>Test Türü:
+        <select name="testType" required>
+            <option value="">Seçiniz</option>
+            <option value="BLOOD">Kan</option>
+            <option value="URINE">İdrar</option>
+            <option value="XRAY">Röntgen</option>
+            <!-- Backend’deki TestType enum değerlerine göre -->
+        </select>
+    </label><br/><br/>
+
+    <label>Test Tarihi:
+        <input type="datetime-local" name="testDate" required />
+    </label><br/><br/>
+
+    <label>Test Sonucu:
+        <textarea name="testResult" rows="3" placeholder="Varsa sonucu girin"></textarea>
+    </label><br/><br/>
+
+    <label>Durum:
+        <select name="status" required>
+            <option value="">Seçiniz</option>
+            <option value="PENDING">Beklemede</option>
+            <option value="COMPLETED">Tamamlandı</option>
+            <option value="CANCELED">İptal Edildi</option>
+            <!-- Backend’deki TestStatus enum değerlerine göre -->
+        </select>
+    </label><br/><br/>
+
+    <label>Fiyat (₺):
+        <input type="number" name="price" min="0" required />
+    </label><br/><br/>
+
+    <label>İlgili Muayene ID:
+        <input type="number" name="examinationId" required />
+    </label><br/><br/>
+
+    <button type="submit">Kaydet</button>
+</form>
+
+<p id="message" style="color:green;"></p>
+<p id="errorMessage" style="color:red;"></p>
+
+<script>
+    const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
+
+    if (!token || role !== "DOCTOR") {
+        alert("Bu sayfaya erişim yetkiniz yok!");
+        window.location.href = "/common/login.html";
+    }
+
+    document.getElementById("labTestForm").addEventListener("submit", function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        const data = {
+            testType: formData.get("testType"),
+            testDate: new Date(formData.get("testDate")).toISOString(),
+            testResult: formData.get("testResult") || null,
+            status: formData.get("status"),
+            price: parseInt(formData.get("price")),
+            examinationId: parseInt(formData.get("examinationId"))
+        };
+
+        fetch("/labTest/save", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + token
+            },
+            body: JSON.stringify(data)
+        })
+        .then(res => {
+            if(!res.ok) return res.json().then(err => Promise.reject(err.message || "Kayıt başarısız"));
+            return res.json();
+        })
+        .then(response => {
+            document.getElementById("message").innerText = "Laboratuvar testi başarıyla kaydedildi. ID: " + response.data.id;
+            document.getElementById("errorMessage").innerText = "";
+            this.reset();
+        })
+        .catch(err => {
+            document.getElementById("errorMessage").innerText = err;
+            document.getElementById("message").innerText = "";
+        });
+    });
+</script>
+
+</body>
+</html>

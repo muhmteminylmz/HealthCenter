@@ -33,7 +33,7 @@ public class NurseController {
 
     @GetMapping("/getById/{id}")
     @PreAuthorize("hasAnyAuthority('ADMIN','DOCTOR','CHIEFDOCTOR')")
-    public ResponseMessage<NurseResponse> getById(@PathVariable @Valid Long id){
+    public ResponseMessage<NurseResponse> getById(@PathVariable Long id){
         return nurseService.getById(id);
     }
 

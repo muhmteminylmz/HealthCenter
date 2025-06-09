@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8" />
+    <title>Muayene Ekle (Doktor)</title>
+</head>
+<body>
+
+<h3>Yeni Muayene Ekle</h3>
+
+<form id="examForm">
+    <label>Muayene Tarihi*: <input type="datetime-local" id="examinationDate" required /></label><br />
+    <label>Tanı: <textarea id="diagnosis"></textarea></label><br />
+
+    <label>Alerji ID'leri (virgülle ayrılmış): <input type="text" id="allergyIds" /></label><br />
+    <label>Hastalık ID'leri* (virgülle ayrılmış): <input type="text" id="diseaseIds" /></label><br />
+    <label>Randevu ID*: <input type="number" id="appointmentId" required /></label><br />
+
+    <button type="submit">Kaydet</button>
+</form>
+
+<p id="successMessage" style="color: green;"></p>
+<p id="errorMessage" style="color: red;"></p>
+
+<script>
+    const token = localStorage.getItem("token");
+
+if (!token) {
+  alert("Yetkisiz erişim! Giriş yapmalısınız.");
+  window.location.href = "static/login.html";
+} else {
+  const payload = JSON.parse(atob(token.split('.')[1]));
+  const role = payload.roles[0];
+  if (role !== "DOCTOR") {
+    alert("Yetkisiz erişim! Sadece doktorlar giriş yapabilir.");
+    window.location.href = "static/login.html";
+  }
+}
+
+
+    document.getElementById("examForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const data = {
+        examinationDate: document.getElementById("examinationDate").value,
+        diagnosis: document.getElementById("diagnosis").value,
+        allergy_Ids: document.getElementById("allergyIds").value.split(',').map(id => Number(id.trim())),
+        disease_Ids: document.getElementById("diseaseIds").value.split(',').map(id => Number(id.trim())),
+        appointmentId: Number(document.getElementById("appointmentId").value)
+      };
+
+      fetch("http://localhost:8080/examination/save", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + token
+        },
+        body: JSON.stringify(data)
+      })
+      .then(res => res.ok ? res.json() : Promise.reject("Kayıt başarısız"))
+      .then(() => {
+        document.getElementById("successMessage").innerText = "Muayene kaydedildi.";
+        document.getElementById("errorMessage").innerText = "";
+        this.reset();
+      })
+      .catch(err => {
+        document.getElementById("errorMessage").innerText = err;
+        document.getElementById("successMessage").innerText = "";
+      });
+    });
+</script>
+
+</body>
+</html>

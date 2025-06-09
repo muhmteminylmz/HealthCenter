@@ -3,6 +3,7 @@ package com.example.health_center.service.domain;
 import com.example.health_center.entity.concretes.MedicalReport;
 import com.example.health_center.entity.concretes.Patient;
 import com.example.health_center.exception.ResourceNotFoundException;
+import com.example.health_center.mapper.MedicalReportMapper;
 import com.example.health_center.payload.request.MedicalReportRequest;
 import com.example.health_center.payload.response.MedicalReportResponse;
 import com.example.health_center.payload.response.ResponseMessage;
@@ -10,6 +11,7 @@ import com.example.health_center.repository.MedicalReportRepository;
 import com.example.health_center.security.service.UserDetailsImpl;
 import com.example.health_center.utils.Messages;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
@@ -23,19 +25,20 @@ import java.util.List;
 public class MedicalReportService {
 
     private final MedicalReportRepository medicalReportRepository;
-    private final PatientService patientService;
+    private final MedicalReportMapper medicalReportMapper;
+    /*private final PatientService patientService;
     private final DoctorService doctorService;
-    private final DiseaseService diseaseService;
+    private final DiseaseService diseaseService;*/
 
 
     public ResponseMessage<?> saveMedicalReport(MedicalReportRequest medicalReportRequest) {
 
-        MedicalReport medicalReport = createMedicalReportRequest(medicalReportRequest);
+        MedicalReport medicalReport = medicalReportMapper.createMedicalReportRequest(medicalReportRequest);
 
         MedicalReport savedMedicalReport = medicalReportRepository.save(medicalReport);
 
         return ResponseMessage.<MedicalReportResponse>builder()
-                .object(createMedicalReportResponse(savedMedicalReport))
+                .object(medicalReportMapper.createMedicalReportResponse(savedMedicalReport))
                 .message("Medical Report Created")
                 .httpStatus(HttpStatus.OK)
                 .build();
@@ -44,13 +47,13 @@ public class MedicalReportService {
     public List<MedicalReportResponse> getPatientReports(UserDetailsImpl currentUser) {
 
         return medicalReportRepository.findAllByPatientId(currentUser.getId())
-                .stream().map(this::createMedicalReportResponse)
+                .stream().map(medicalReportMapper::createMedicalReportResponse)
                 .toList();
     }
 
     public List<MedicalReportResponse> getDoctorReports(UserDetailsImpl currentUser) {
         return medicalReportRepository.findAllByDoctorId(currentUser.getId())
-                .stream().map(this::createMedicalReportResponse)
+                .stream().map(medicalReportMapper::createMedicalReportResponse)
                 .toList();
     }
 
@@ -70,19 +73,19 @@ public class MedicalReportService {
     public List<MedicalReportResponse> getPatientReportsForCustom(Long patientId) {
 
         return medicalReportRepository.findAllByPatientId(patientId)
-                .stream().map(this::createMedicalReportResponse)
+                .stream().map(medicalReportMapper::createMedicalReportResponse)
                 .toList();
     }
 
     public List<MedicalReportResponse> getDoctorReportsForCustom(Long doctorId) {
 
-        return medicalReportRepository.findAllByPatientId(doctorId)
-                .stream().map(this::createMedicalReportResponse)
+        return medicalReportRepository.findAllByDoctorId(doctorId)
+                .stream().map(medicalReportMapper::createMedicalReportResponse)
                 .toList();
     }
 
 
-    public MedicalReportResponse createMedicalReportResponse(MedicalReport medicalReport){
+    /*public MedicalReportResponse createMedicalReportResponse(MedicalReport medicalReport){
         return MedicalReportResponse.builder()
                 .id(medicalReport.getId())
                 .description(medicalReport.getDescription())
@@ -105,7 +108,7 @@ public class MedicalReportService {
                 .patient(patientService.getPatientById(medicalReportRequest.getPatientId()))
                 .doctor(doctorService.getByIdForCustom(medicalReportRequest.getDoctorId()))
                 .build();
-    }
+    }*/
 
 
 

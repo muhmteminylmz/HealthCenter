@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8" />
+    <title>Muayene Güncelle</title>
+</head>
+<body>
+<h3>Muayene Güncelle (Admin, Doctor, ChiefDoctor)</h3>
+
+<form id="updateExamForm">
+    <label>Muayene Tarihi:
+        <input type="datetime-local" id="examinationDate" required />
+    </label><br/>
+
+    <label>Tanı:
+        <input type="text" id="diagnosis" />
+    </label><br/>
+
+    <label>Alerji ID’leri (virgülle ayrılmış):
+        <input type="text" id="allergyIds" />
+    </label><br/>
+
+    <label>Hastalık ID’leri (virgülle ayrılmış):
+        <input type="text" id="diseaseIds" />
+    </label><br/>
+
+    <label>Randevu ID:
+        <input type="number" id="appointmentId" />
+    </label><br/>
+
+    <button type="submit">Güncelle</button>
+</form>
+
+<p id="resultMessage" style="color: green;"></p>
+<p id="errorMessage" style="color: red;"></p>
+
+<script>
+    const token = localStorage.getItem("token");
+    const urlParams = new URLSearchParams(window.location.search);
+    const examId = urlParams.get("id"); // ?id= ile gelen parametre
+
+    if (!token) {
+        alert("Giriş yapmanız gerekiyor!");
+        window.location.href = "/common/login.html";
+    }
+
+    // Muayene detaylarını çekip forma doldur
+    fetch(`/examination/getById/${examId}`, {
+        headers: { "Authorization": "Bearer " + token }
+    })
+    .then(res => res.ok ? res.json() : Promise.reject("Muayene bilgisi alınamadı"))
+    .then(data => {
+        const exam = data.data;
+        document.getElementById("examinationDate").value = new Date(exam.examinationDate).toISOString().slice(0,16);
+        document.getElementById("diagnosis").value = exam.diagnosis || "";
+
+        const allergyIds = exam.allergies ? exam.allergies.map(a => a.id).join(",") : "";
+        const diseaseIds = exam.diseases ? exam.diseases.map(d => d.id).join(",") : "";
+        document.getElementById("allergyIds").value = allergyIds;
+        document.getElementById("diseaseIds").value = diseaseIds;
+
+        document.getElementById("appointmentId").value = exam.appointment ? exam.appointment.id : "";
+    })
+    .catch(err => {
+        document.getElementById("errorMessage").innerText = err;
+    });
+
+    // Form submit update isteği gönderir
+    document.getElementById("updateExamForm").addEventListener("submit", function(e) {
+        e.preventDefault();
+
+        const payload = {
+            examinationDate: new Date(document.getElementById("examinationDate").value).toISOString(),
+            diagnosis: document.getElementById("diagnosis").value,
+            allergy_Ids: document.getElementById("allergyIds").value.split(",").map(x => parseInt(x.trim())).filter(x => !isNaN(x)),
+            disease_Ids: document.getElementById("diseaseIds").value.split(",").map(x => parseInt(x.trim())).filter(x => !isNaN(x)),
+            appointmentId: parseInt(document.getElementById("appointmentId").value) || null
+        };
+
+        fetch(`/examination/update/${examId}`, {
+            method: "PUT",
+            headers: {
+                "Authorization": "Bearer " + token,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(payload)
+        })
+        .then(res => {
+            if (!res.ok) return res.json().then(d => Promise.reject(d.message || "Güncelleme başarısız"));
+            return res.json();
+        })
+        .then(data => {
+            document.getElementById("resultMessage").innerText = "Muayene başarıyla güncellendi.";
+            document.getElementById("errorMessage").innerText = "";
+        })
+        .catch(err => {
+            document.getElementById("errorMessage").innerText = err;
+            document.getElementById("resultMessage").innerText = "";
+        });
+    });
+</script>
+
+</body>
+</html>

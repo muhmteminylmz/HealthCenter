@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8" />
+    <title>Muayene Sil</title>
+</head>
+<body>
+
+<h3>Muayene Sil</h3>
+
+<label>Silinecek Muayene ID: <input type="number" id="examinationId" required /></label>
+<button id="deleteBtn">Sil</button>
+
+<p id="resultMessage" style="color: green;"></p>
+<p id="errorMessage" style="color: red;"></p>
+
+<script>
+    const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
+
+    if (!token || !["ADMIN","DOCTOR","CHIEFDOCTOR"].includes(role)) {
+        alert("Bu sayfaya erişim yetkiniz yok!");
+        window.location.href = "static/login.html";
+    }
+
+    document.getElementById("deleteBtn").addEventListener("click", () => {
+        const id = document.getElementById("examinationId").value;
+        if (!id) {
+            alert("Lütfen geçerli bir Muayene ID giriniz.");
+            return;
+        }
+
+        fetch(`http://localhost:8080/examination/delete/${id}`, {
+            method: "DELETE",
+            headers: {
+                "Authorization": "Bearer " + token
+            }
+        })
+        .then(res => {
+            if (!res.ok) {
+                return res.json().then(data => Promise.reject(data.message || "Silme işlemi başarısız."));
+            }
+            return res.json();
+        })
+        .then(response => {
+            document.getElementById("resultMessage").innerText = "Muayene başarıyla silindi!";
+            document.getElementById("errorMessage").innerText = "";
+            document.getElementById("examinationId").value = "";
+        })
+        .catch(err => {
+            document.getElementById("errorMessage").innerText = err;
+            document.getElementById("resultMessage").innerText = "";
+        });
+    });
+</script>
+
+</body>
+</html>

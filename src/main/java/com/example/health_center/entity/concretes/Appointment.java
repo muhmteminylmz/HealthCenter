@@ -36,6 +36,6 @@ public class Appointment {
     @JsonIgnore
     private Doctor doctor;
 
-    @OneToOne
+    @OneToOne(mappedBy = "appointment")
     private Examination examination;
 }

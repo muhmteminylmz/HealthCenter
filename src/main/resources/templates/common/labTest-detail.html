@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8" />
+    <title>Laboratuvar Testi Detayı</title>
+</head>
+<body>
+
+<h3>Laboratuvar Testi Detayı</h3>
+
+<label>Test ID: <input type="number" id="labTestId" required /></label>
+<button id="fetchBtn">Getir</button>
+
+<div id="details" style="margin-top:20px;"></div>
+<p id="errorMessage" style="color:red;"></p>
+
+<script>
+    const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
+
+    if (!token || !["ADMIN","CHIEFDOCTOR"].includes(role)) {
+        alert("Bu sayfaya erişim yetkiniz yok!");
+        window.location.href = "/common/login.html";
+    }
+
+    document.getElementById("fetchBtn").addEventListener("click", () => {
+        const id = document.getElementById("labTestId").value;
+        if (!id) {
+            alert("Lütfen geçerli bir ID girin.");
+            return;
+        }
+
+        fetch(`/labTest/getById/${id}`, {
+            headers: { "Authorization": "Bearer " + token }
+        })
+        .then(res => {
+            if (!res.ok) {
+                return res.json().then(data => Promise.reject(data.message || "Veri alınamadı"));
+            }
+            return res.json();
+        })
+        .then(response => {
+            const test = response.data;
+            let html = `
+                <p><strong>ID:</strong> ${test.id}</p>
+                <p><strong>Test Türü:</strong> ${test.testType}</p>
+                <p><strong>Test Tarihi:</strong> ${new Date(test.testDate).toLocaleString("tr-TR")}</p>
+                <p><strong>Durum:</strong> ${test.status}</p>
+                <p><strong>Sonuç:</strong> ${test.testResult || "-"}</p>
+                <p><strong>Fiyat:</strong> ${test.price} ₺</p>
+                <p><strong>Hasta:</strong> ${test.patientName} (ID: ${test.patientId})</p>
+                <p><strong>Doktor:</strong> ${test.doctorName} (ID: ${test.doctorId})</p>
+            `;
+            document.getElementById("details").innerHTML = html;
+            document.getElementById("errorMessage").innerText = "";
+        })
+        .catch(err => {
+            document.getElementById("errorMessage").innerText = err;
+            document.getElementById("details").innerHTML = "";
+        });
+    });
+</script>
+
+</body>
+</html>

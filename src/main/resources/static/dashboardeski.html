@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard - Health Center</title>
+    <style>
+        body {
+            display: flex;
+            margin: 0;
+            font-family: sans-serif;
+        }
+        #sidebar {
+            width: 200px;
+            background-color: #f3f3f3;
+            padding: 20px;
+            height: 100vh;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+        #content {
+            flex-grow: 1;
+            padding: 20px;
+        }
+        .menu-item {
+            display: block;
+            margin: 10px 0;
+            cursor: pointer;
+            color: #007bff;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+<div id="sidebar">
+    <h3>Menü</h3>
+    <div id="menuItems"></div>
+    <hr/>
+    <button onclick="logout()">Çıkış Yap</button>
+</div>
+
+<div id="content">
+    <h2>Hoş geldiniz</h2>
+    <div id="mainArea">Yükleniyor...</div>
+</div>
+
+<script>
+    const token = localStorage.getItem("token");
+    if (!token) {
+        window.location.href = "/login.html";
+    }
+
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    const role = payload.roles[0]; // Varsayılan tek rol
+
+    const username = payload.sub;
+    document.querySelector("#mainArea").innerText = `Hoş geldiniz, ${username} (${role})`;
+
+    const menuItemsDiv = document.getElementById("menuItems");
+
+    // Menüleri role göre oluştur
+    const roleMenus = {
+    PATIENT: [
+        { label: "Randevu Oluştur", page: "/templates/patient/appointment-create.html" },
+        { label: "Randevularım", page: "/templates/patient/my-appointments-patient.html" },
+        { label: "Reçetelerim", page: "/templates/patient/prescription-list.html" },             // Yeni
+        { label: "Hastalıklarım", page: "/templates/patient/myDiseases.html" }        // Yeni
+    ],
+    DOCTOR: [
+        { label: "Randevularım", page: "/templates/doctor/my-appointments-doctor.html" },
+        { label: "Reçetelerim", page: "/templates/doctor/prescription-list.html" },             // Yeni
+        { label: "Muayne olustur", page: "/templates/doctor/examination-save.html" } // Yeni
+    ],
+    ADMIN: [
+        { label: "Tüm Randevular", page: "/templates/admin/appointment-list.html" },
+        { label: "Tüm Reçeteler", page: "/templates/admin/doctor-getAll.html" }             // Yeni
+    ]
+};
+
+
+    const menus = roleMenus[role] || [];
+    menus.forEach(menu => {
+        const link = document.createElement("div");
+        link.className = "menu-item";
+        link.innerText = menu.label;
+        link.onclick = () => {
+            document.getElementById("mainArea").innerHTML = "Yükleniyor...";
+            fetch(menu.page)
+                .then(res => res.text())
+                .then(html => {
+                    document.getElementById("mainArea").innerHTML = html;
+                });
+        };
+        menuItemsDiv.appendChild(link);
+    });
+
+    function logout() {
+        localStorage.removeItem("token");
+        window.location.href = "login.html";
+    }
+</script>
+
+</body>
+</html>
+
+
+<!--<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard - Health Center</title>
+</head>
+<body>
+<h2>Welcome to the Dashboard</h2>
+
+<div id="userInfo"></div>
+<div id="dataArea"></div>
+<p id="errorMessage" style="color: red;"></p>
+
+<script>
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+        window.location.href = "/login.html"; // Token yoksa login sayfasına gönder
+    }
+
+    // Token varsa kullanıcı bilgilerini getir
+    fetch("/api/user/me", {
+        method: "GET",
+        headers: {
+            "Authorization": "Bearer " + token
+        }
+    })
+    .then(response => {
+        if (response.status === 401) {
+            throw new Error("Yetkisiz giriş. Lütfen tekrar giriş yapın.");
+        }
+        return response.json();
+    })
+    .then(data => {
+        document.getElementById("userInfo").innerText = `Merhaba, ${data.username} (${data.role})`;
+
+        // Örnek veri çekme:
+        return fetch("/api/appointments", {
+            headers: {
+                "Authorization": "Bearer " + token
+            }
+        });
+    })
+    .then(response => response.json())
+    .then(appointments => {
+        let html = "<h3>Randevular:</h3><ul>";
+        appointments.forEach(a => {
+            html += `<li>${a.date} - ${a.patientName}</li>`;
+        });
+        html += "</ul>";
+        document.getElementById("dataArea").innerHTML = html;
+    })
+    .catch(error => {
+        document.getElementById("errorMessage").innerText = error.message;
+    });
+</script>
+</body>
+</html>-->

@@ -28,6 +28,7 @@ public class MedicalReport {
 
     private LocalDate endDate;
 
+    @ManyToOne
     private Disease diagnosis;
 
     @ManyToOne

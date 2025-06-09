@@ -1,0 +1,65 @@
+<h3>Hastalıklarım</h3>
+
+<table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse; width: 100%;">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Hastalık</th>
+        <th>Tanı Tarihi</th>
+    </tr>
+    </thead>
+    <tbody id="diseasesBody">
+    <tr><td colspan="3">Yükleniyor...</td></tr>
+    </tbody>
+</table>
+
+<p id="errorMessage" style="color: red;"></p>
+
+<script>
+    const token = localStorage.getItem("token");
+    if (!token) {
+        window.location.href = "/login.html";
+    }
+
+    fetch("/patient-diseases/by-patient/" + getUserIdFromToken(), {
+        headers: {
+            "Authorization": "Bearer " + token
+        }
+    })
+    .then(res => {
+        if (!res.ok) {
+            throw new Error("Hastalıklar alınamadı.");
+        }
+        return res.json();
+    })
+    .then(diseases => {
+        const tbody = document.getElementById("diseasesBody");
+        tbody.innerHTML = "";
+
+        if (diseases.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="3">Hastalık kaydınız bulunmamaktadır.</td></tr>`;
+            return;
+        }
+
+        diseases.forEach(d => {
+            tbody.innerHTML += `
+                <tr>
+                    <td>${d.id}</td>
+                    <td>${d.disease.name}</td>
+                    <td>${d.diagnosisDate ? new Date(d.diagnosisDate).toLocaleDateString("tr-TR") : "-"}</td>
+                </tr>
+            `;
+        });
+    })
+    .catch(error => {
+        document.getElementById("errorMessage").innerText = error.message;
+    });
+
+    // Token içinden userId alma fonksiyonu (JWT'den id çıkarmak için)
+    function getUserIdFromToken() {
+        const token = localStorage.getItem("token");
+        if (!token) return null;
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        return payload.id;  // Backend'de JWT payload içinde id alanı varsa
+    }
+</script>

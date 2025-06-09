@@ -1,0 +1,63 @@
+<h3>Reçetelerim</h3>
+
+<table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse; width: 100%;">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>İlaç</th>
+        <th>Dozaj</th>
+        <th>Not</th>
+        <th>Takip Tarihi</th>
+        <th>Doktor</th>
+    </tr>
+    </thead>
+    <tbody id="prescriptionsBody">
+    <tr><td colspan="6">Yükleniyor...</td></tr>
+    </tbody>
+</table>
+
+<p id="errorMessage" style="color: red;"></p>
+
+<script>
+    const token = localStorage.getItem("token");
+    if (!token) {
+        window.location.href = "/login.html";
+    }
+
+    fetch("/prescription/getPrescriptionsByPatient", {
+        headers: {
+            "Authorization": "Bearer " + token
+        }
+    })
+    .then(res => {
+        if (!res.ok) {
+            throw new Error("Reçeteler alınamadı.");
+        }
+        return res.json();
+    })
+    .then(prescriptions => {
+        const tbody = document.getElementById("prescriptionsBody");
+        tbody.innerHTML = "";
+
+        if (prescriptions.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6">Reçeteniz bulunmamaktadır.</td></tr>`;
+            return;
+        }
+
+        prescriptions.forEach(p => {
+            tbody.innerHTML += `
+                <tr>
+                    <td>${p.id}</td>
+                    <td>${p.medicine}</td>
+                    <td>${p.dosage}</td>
+                    <td>${p.prescriptionNote}</td>
+                    <td>${p.followUpDate ? new Date(p.followUpDate).toLocaleDateString("tr-TR") : "-"}</td>
+                    <td>${p.doctorName}</td>
+                </tr>
+            `;
+        });
+    })
+    .catch(error => {
+        document.getElementById("errorMessage").innerText = error.message;
+    });
+</script>

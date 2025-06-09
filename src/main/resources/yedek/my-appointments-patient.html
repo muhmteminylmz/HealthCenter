@@ -1,0 +1,62 @@
+<h3>Randevularım (Hasta)</h3>
+
+<table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse; width: 100%;">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Tarih</th>
+        <th>Doktor</th>
+        <th>Durum</th>
+        <th>İptal Nedeni</th>
+    </tr>
+    </thead>
+    <tbody id="appointmentsBody">
+    <tr><td colspan="5">Yükleniyor...</td></tr>
+    </tbody>
+</table>
+
+<p id="errorMessage" style="color: red;"></p>
+
+<script>
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+        window.location.href = "/login.html";
+    }
+
+    fetch("/appointment/getAppointmentsByUserForPatient", {
+        headers: {
+            "Authorization": "Bearer " + token
+        }
+    })
+    .then(res => {
+        if (!res.ok) {
+            throw new Error("Randevular alınamadı.");
+        }
+        return res.json();
+    })
+    .then(appointments => {
+        const tbody = document.getElementById("appointmentsBody");
+        tbody.innerHTML = ""; // Temizle
+
+        if (appointments.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5">Randevunuz bulunmamaktadır.</td></tr>`;
+            return;
+        }
+
+        appointments.forEach(a => {
+            tbody.innerHTML += `
+                <tr>
+                    <td>${a.id}</td>
+                    <td>${new Date(a.appointmentDate).toLocaleString()}</td>
+                    <td>${a.doctorName}</td>
+                    <td>${a.status}</td>
+                    <td>${a.cancellationReason ? a.cancellationReason : "-"}</td>
+                </tr>
+            `;
+        });
+    })
+    .catch(error => {
+        document.getElementById("errorMessage").innerText = error.message;
+    });
+</script>

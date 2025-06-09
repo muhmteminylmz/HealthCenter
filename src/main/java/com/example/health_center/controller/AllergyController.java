@@ -4,11 +4,13 @@ import com.example.health_center.payload.response.AllergyResponse;
 import com.example.health_center.payload.response.AppointmentResponse;
 import com.example.health_center.payload.response.DiseaseResponse;
 import com.example.health_center.payload.response.ResponseMessage;
+import com.example.health_center.security.service.UserDetailsImpl;
 import com.example.health_center.service.domain.AllergyService;
 import com.example.health_center.service.loader.AllergyLoaderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.web.bind.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -21,10 +23,10 @@ public class AllergyController {
 
     private final AllergyService allergyService;
 
-    @GetMapping("/getByPatient/{patientId}")
-    @PreAuthorize("#patientId == authentication.principal.id and hasRole('PATIENT')")
-    public List<AllergyResponse> getByPatient(@PathVariable("patientId") @Valid Long patientId){
-        return allergyService.getByPatient(patientId);
+    @GetMapping("/getByPatient")
+    @PreAuthorize("hasAuthority('PATIENT')")
+    public List<AllergyResponse> getByPatient(@AuthenticationPrincipal UserDetailsImpl userDetails){
+        return allergyService.getByPatient(userDetails.getId());
     }
 
     @GetMapping("/getAll")

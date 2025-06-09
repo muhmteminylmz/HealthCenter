@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8" />
+    <title>Doktor Sil (Admin)</title>
+</head>
+<body>
+
+<h3>Doktor Sil (Admin)</h3>
+
+<label for="doctorIdInput">Silinecek Doktor ID'si:</label>
+<input type="number" id="doctorIdInput" />
+<button onclick="deleteDoctor()">Sil</button>
+
+<p id="resultMessage" style="color: green;"></p>
+<p id="errorMessage" style="color: red;"></p>
+
+<script>
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+    alert("Yetkisiz erişim! Giriş yapmalısınız.");
+    window.location.href = "static/login.html";
+    } else {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    const role = payload.roles[0];
+    if (role !== "ADMIN") {
+    alert("Yetkisiz erişim! Sadece adminler giriş yapabilir.");
+    window.location.href = "static/login.html";
+    }
+}
+
+    function deleteDoctor() {
+      const id = document.getElementById("doctorIdInput").value;
+      if (!id) {
+        alert("Lütfen geçerli bir ID giriniz.");
+        return;
+      }
+
+      if (!confirm("Bu doktoru silmek istediğinize emin misiniz?")) {
+        return;
+      }
+
+      fetch(`http://localhost:8080/doctor/delete/${id}`, {
+        method: "DELETE",
+        headers: { "Authorization": "Bearer " + token }
+      })
+      .then(res => {
+        if (!res.ok) {
+          return res.json().then(data => Promise.reject(data.message || "Silme işlemi başarısız"));
+        }
+        return res.json();
+      })
+      .then(response => {
+        document.getElementById("resultMessage").innerText = "Doktor başarıyla silindi.";
+        document.getElementById("errorMessage").innerText = "";
+      })
+      .catch(err => {
+        document.getElementById("errorMessage").innerText = err;
+        document.getElementById("resultMessage").innerText = "";
+      });
+    }
+</script>
+
+</body>
+</html>

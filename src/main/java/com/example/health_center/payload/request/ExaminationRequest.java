@@ -25,9 +25,12 @@ public class ExaminationRequest {
 
     private List<Long> allergy_Ids;
 
+    @NotNull(message = "Diagnosis is required")
     private List<Long> disease_Ids;
 
+    @NotNull(message = "Diagnosis is required")
     private String diagnosis;
 
+    @NotNull(message = "Appointment id is required")
     private Long appointmentId;
 }

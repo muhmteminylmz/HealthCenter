@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8" />
+    <title>Yeni Şef Doktor Ekle</title>
+</head>
+<body>
+<h2>Yeni Şef Doktor Ekle</h2>
+
+<form id="chiefDoctorForm">
+    <label>Username: <input type="text" name="username" required minlength="4" maxlength="16" /></label><br/>
+    <label>Ad: <input type="text" name="name" required minlength="2" maxlength="16" /></label><br/>
+    <label>Soyad: <input type="text" name="surname" required minlength="2" maxlength="16" /></label><br/>
+    <label>Doğum Tarihi: <input type="date" name="birthDate" required /></label><br/>
+    <label>TC No: <input type="text" name="tc" pattern="[1-9][0-9]{10}" required /></label><br/>
+    <label>Telefon: <input type="text" name="phoneNumber" pattern="\d{12}" required /></label><br/>
+    <label>Cinsiyet:
+        <select name="gender" required>
+            <option value="">Seçiniz</option>
+            <option value="MALE">Erkek</option>
+            <option value="FEMALE">Kadın</option>
+            <option value="OTHER">Diğer</option>
+        </select>
+    </label><br/>
+    <label>Şifre: <input type="password" name="password" required minlength="8" /></label><br/>
+    <label>Görev Başlangıç Tarihi: <input type="date" name="dutyStartDate" required /></label><br/>
+    <label>Görev Bitiş Tarihi: <input type="date" name="dutyEndDate" required /></label><br/>
+
+    <button type="submit">Kaydet</button>
+</form>
+
+<p id="message"></p>
+
+<script>
+    const token = localStorage.getItem("token");
+    if(!token) window.location.href = "static/login.html";
+
+    document.getElementById("chiefDoctorForm").addEventListener("submit", function(e){
+        e.preventDefault();
+
+        const formData = new FormData(this);
+        const data = {
+            username: formData.get("username"),
+            name: formData.get("name"),
+            surname: formData.get("surname"),
+            birthDate: formData.get("birthDate"),
+            tc: formData.get("tc"),
+            phoneNumber: formData.get("phoneNumber"),
+            gender: formData.get("gender"),
+            password: formData.get("password"),
+            dutyStartDate: formData.get("dutyStartDate"),
+            dutyEndDate: formData.get("dutyEndDate")
+        };
+
+        fetch("http://localhost:8080/chiefDoctor/save", {
+            method: "POST",
+            headers: {
+                "Authorization": "Bearer " + token,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
+        })
+        .then(res => {
+            if (!res.ok) {
+                return res.json().then(err => {throw new Error(err.message || "Kayıt başarısız")});
+            }
+            return res.json();
+        })
+        .then(response => {
+            document.getElementById("message").innerText = "Şef doktor başarıyla kaydedildi.";
+            this.reset();
+        })
+        .catch(err => {
+            document.getElementById("message").innerText = "Hata: " + err.message;
+        });
+    });
+</script>
+</body>
+</html>

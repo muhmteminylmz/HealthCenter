@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8" />
+    <title>Hemşire Güncelle</title>
+</head>
+<body>
+<h3>Hemşire Güncelle</h3>
+
+<form id="nurseUpdateForm">
+    <label>İsim: <input type="text" name="name" required minlength="2" maxlength="16" /></label><br/>
+    <label>Soyisim: <input type="text" name="surname" required minlength="2" maxlength="16" /></label><br/>
+    <label>Doğum Tarihi: <input type="date" name="birthDate" required /></label><br/>
+    <label>TC No: <input type="text" name="tc" required pattern="^[1-9][0-9]{10}$" /></label><br/>
+    <label>Telefon: <input type="text" name="phoneNumber" required pattern="^\\(?\\d{3}\\)?[-.]?\\d{3}[-.]?\\d{4}$" /></label><br/>
+    <label>Cinsiyet:
+        <select name="gender" required>
+            <option value="">Seçiniz</option>
+            <option value="MALE">Erkek</option>
+            <option value="FEMALE">Kadın</option>
+            <option value="OTHER">Diğer</option>
+        </select>
+    </label><br/>
+    <label>Görev Başlangıç Tarihi: <input type="date" name="dutyStartDate" required /></label><br/>
+    <label>Görev Bitiş Tarihi: <input type="date" name="dutyEndDate" required /></label><br/>
+    <label>Başlangıç Saati: <input type="time" name="startTime" required /></label><br/>
+    <label>Bitiş Saati: <input type="time" name="endTime" required /></label><br/>
+    <button type="submit">Güncelle</button>
+</form>
+
+<p id="message" style="color: red;"></p>
+
+<script>
+    const token = localStorage.getItem("token");
+    const nurseId = new URLSearchParams(window.location.search).get("id");
+
+    if (!token || !nurseId) window.location.href = "/login.html";
+
+    // Nurse bilgilerini al ve formu doldur
+    fetch(`/nurse/getById/${nurseId}`, {
+        headers: {
+            "Authorization": "Bearer " + token
+        }
+    })
+    .then(res => res.ok ? res.json() : Promise.reject("Hemşire bulunamadı"))
+    .then(nurse => {
+        const form = document.getElementById("nurseUpdateForm");
+        form.name.value = nurse.data.name;
+        form.surname.value = nurse.data.surname;
+        form.birthDate.value = new Date(nurse.data.birthDate).toLocaleDateString("tr-TR");
+        form.tc.value = nurse.data.tc;
+        form.phoneNumber.value = nurse.data.phoneNumber;
+        form.gender.value = nurse.data.gender;
+        form.dutyStartDate.value = new Date(nurse.data.dutyStartDate).toLocaleDateString("tr-TR");
+        form.dutyEndDate.value = new Date(nurse.data.dutyEndDate).toLocaleDateString("tr-TR");
+        form.startTime.value = new Date(`1970-01-01T${nurse.data.startTime}`).toLocaleTimeString("tr-TR");
+        form.endTime.value = new Date(`1970-01-01T${nurse.data.endTime}`).toLocaleTimeString("tr-TR");
+    })
+    .catch(err => {
+        document.getElementById("message").innerText = err;
+    });
+
+    // Formu gönderme işlemi
+    document.getElementById("nurseUpdateForm").addEventListener("submit", function(e) {
+        e.preventDefault();
+
+        const formData = new FormData(e.target);
+
+        const nurseData = {
+            name: formData.get("name"),
+            surname: formData.get("surname"),
+            birthDate: formData.get("birthDate"),
+            tc: formData.get("tc"),
+            phoneNumber: formData.get("phoneNumber"),
+            gender: formData.get("gender"),
+            dutyStartDate: formData.get("dutyStartDate"),
+            dutyEndDate: formData.get("dutyEndDate"),
+            startTime: formData.get("startTime"),
+            endTime: formData.get("endTime")
+        };
+
+        fetch(`/nurse/update/${nurseId}`, {
+            method: "PUT",
+            headers: {
+                "Authorization": "Bearer " + token,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(nurseData)
+        })
+        .then(res => {
+            if (!res.ok) throw new Error("Güncelleme işlemi başarısız.");
+            return res.json();
+        })
+        .then(data => {
+            document.getElementById("message").style.color = "green";
+            document.getElementById("message").innerText = "Hemşire başarıyla güncellendi.";
+        })
+        .catch(err => {
+            document.getElementById("message").style.color = "red";
+            document.getElementById("message").innerText = err.message;
+        });
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,63 @@
+<!-- doctor/prescription-create.html -->
+<h3>Yeni Reçete Oluştur</h3>
+
+<form id="prescriptionForm">
+    <label for="medicine">İlaç Adı:</label><br/>
+    <input type="text" id="medicine" name="medicine" required minlength="2" maxlength="16"><br/>
+
+    <label for="dosage">Dozaj:</label><br/>
+    <input type="text" id="dosage" name="dosage" required minlength="2" maxlength="10"><br/>
+
+    <label for="prescriptionNote">Reçete Notu:</label><br/>
+    <textarea id="prescriptionNote" name="prescriptionNote" required minlength="1" maxlength="200"></textarea><br/>
+
+    <label for="patientId">Hasta ID:</label><br/>
+    <input type="number" id="patientId" name="patientId" required><br/><br/>
+
+    <button type="submit">Reçeteyi Kaydet</button>
+</form>
+
+<p id="message"></p>
+
+<script>
+    const token = localStorage.getItem("token");
+    if (!token) {
+        window.location.href = "/login.html";
+    }
+
+    document.getElementById("prescriptionForm").addEventListener("submit", async function(e) {
+        e.preventDefault();
+
+        const medicine = document.getElementById("medicine").value.trim();
+        const dosage = document.getElementById("dosage").value.trim();
+        const prescriptionNote = document.getElementById("prescriptionNote").value.trim();
+        const patientId = Number(document.getElementById("patientId").value);
+
+        const payload = { medicine, dosage, prescriptionNote, patientId };
+
+        try {
+            const response = await fetch("/prescription/save", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + token
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                document.getElementById("message").style.color = "green";
+                document.getElementById("message").innerText = data.message || "Reçete başarıyla kaydedildi.";
+                this.reset();
+            } else {
+                document.getElementById("message").style.color = "red";
+                document.getElementById("message").innerText = data.message || "Reçete kaydedilirken hata oluştu.";
+            }
+        } catch (error) {
+            document.getElementById("message").style.color = "red";
+            document.getElementById("message").innerText = "Sunucu ile iletişimde hata oluştu.";
+        }
+    });
+</script>

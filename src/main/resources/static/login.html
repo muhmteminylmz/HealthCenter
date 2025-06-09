@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login - Health Center</title>
+</head>
+<body>
+<h2>Login</h2>
+
+<form id="loginForm">
+    <label for="username">Username:</label><br/>
+    <input type="text" id="username" name="username" required><br/>
+
+    <label for="password">Password:</label><br/>
+    <input type="password" id="password" name="password" required><br/><br/>
+
+    <button type="submit">Login</button>
+</form>
+
+<p id="errorMessage" style="color: red;"></p>
+
+<script>
+    console.log("Script başladı");
+
+    document.getElementById("loginForm").addEventListener("submit", async function (e) {
+        e.preventDefault();
+
+        const username = document.getElementById("username").value;
+        const password = document.getElementById("password").value;
+
+        const response = await fetch("http://localhost:8080/auth/login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({username, password})
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            localStorage.setItem("token", data.token); // JWT'yi sakla
+
+            alert("Giriş başarılı! Dashboard'a yönlendiriliyorsunuz.");
+            window.location.href = "dashboard.html"; // Veya /admin.html, /doctor.html, vs.
+        } else {
+            document.getElementById("errorMessage").textContent = "Hatalı kullanıcı adı veya şifre.";
+        }
+    });
+</script>
+</body>
+</html>

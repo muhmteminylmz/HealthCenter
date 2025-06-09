@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8" />
+    <title>Admin Listesi</title>
+    <style>
+        table { border-collapse: collapse; width: 100%; }
+        th, td { padding: 8px; border: 1px solid #ccc; }
+        th { cursor: pointer; }
+        #pagination button { margin: 2px; }
+    </style>
+</head>
+<body>
+<h3>Admin Listesi</h3>
+
+<table id="adminTable">
+    <thead>
+    <tr>
+        <th data-sort="userName">Kullanıcı Adı</th>
+        <th data-sort="name">İsim</th>
+        <th data-sort="surname">Soyisim</th>
+        <th data-sort="birthDate">Doğum Tarihi</th>
+        <th data-sort="tc">TC No</th>
+        <th data-sort="phoneNumber">Telefon</th>
+        <th data-sort="gender">Cinsiyet</th>
+        <th>İşlemler</th>
+    </tr>
+    </thead>
+    <tbody id="adminBody">
+    <tr><td colspan="8">Yükleniyor...</td></tr>
+    </tbody>
+</table>
+
+<div id="pagination"></div>
+<p id="errorMessage" style="color:red;"></p>
+
+<script>
+    const token = localStorage.getItem("token");
+    if (!token) window.location.href = "/login.html";
+
+    // Default sayfa, sayfa büyüklüğü ve sıralama
+    let page = 0;
+    const size = 10;
+    let sort = "name";
+    let type = "desc";
+
+    const adminBody = document.getElementById("adminBody");
+    const errorMessage = document.getElementById("errorMessage");
+    const paginationDiv = document.getElementById("pagination");
+
+    function loadAdmins() {
+        errorMessage.innerText = "";
+        fetch(`http://localhost:8080/admin/getAll?page=${page}&size=${size}&sort=${sort}&type=${type}`, {
+            headers: { "Authorization": "Bearer " + token }
+        })
+        .then(res => {
+            if (!res.ok) throw new Error("Adminler yüklenemedi.");
+            return res.json();
+        })
+        .then(data => {
+            adminBody.innerHTML = "";
+            if(data.content.length === 0) {
+                adminBody.innerHTML = `<tr><td colspan="8">Admin bulunamadı.</td></tr>`;
+                paginationDiv.innerHTML = "";
+                return;
+            }
+            data.content.forEach(admin => {
+                adminBody.innerHTML += `
+                    <tr>
+                        <td>${admin.username}</td>
+                        <td>${admin.name}</td>
+                        <td>${admin.surname}</td>
+                        <td>${new Date(admin.birthDate).toLocaleDateString("tr-TR")}</td>
+                        <td>${admin.tc}</td>
+                        <td>${admin.phoneNumber}</td>
+                        <td>${admin.gender}</td>
+                        <td><button onclick="deleteAdmin(${admin.userId})">Sil</button></td>
+                    </tr>
+                `;
+            });
+            renderPagination(data.totalPages);
+        })
+        .catch(err => {
+            errorMessage.innerText = err.message;
+            adminBody.innerHTML = "";
+        });
+    }
+
+    function renderPagination(totalPages) {
+        paginationDiv.innerHTML = "";
+        for(let i = 0; i < totalPages; i++) {
+            const btn = document.createElement("button");
+            btn.innerText = i + 1;
+            btn.disabled = i === page;
+            btn.onclick = () => {
+                page = i;
+                loadAdmins();
+            };
+            paginationDiv.appendChild(btn);
+        }
+    }
+
+    function deleteAdmin(id) {
+        if(!confirm("Admini silmek istediğinize emin misiniz?")) return;
+
+        fetch(`http://localhost:8080/admin/delete/${id}`, {
+            method: "DELETE",
+            headers: { "Authorization": "Bearer " + token }
+        })
+        .then(res => {
+            if(!res.ok) throw new Error("Admin silinemedi.");
+            alert("Admin başarıyla silindi.");
+            loadAdmins();
+        })
+        .catch(err => {
+            errorMessage.innerText = err.message;
+        });
+    }
+
+    // Sıralama butonları
+    document.querySelectorAll("th[data-sort]").forEach(th => {
+        th.addEventListener("click", () => {
+            const newSort = th.getAttribute("data-sort");
+            if(sort === newSort) {
+                type = (type === "asc") ? "desc" : "asc";
+            } else {
+                sort = newSort;
+                type = "asc";
+            }
+            loadAdmins();
+        });
+    });
+
+    loadAdmins();
+</script>
+</body>
+</html>

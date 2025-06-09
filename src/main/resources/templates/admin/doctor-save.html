@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8" />
+    <title>Doktor Kaydet (Admin)</title>
+</head>
+<body>
+
+<h3>Yeni Doktor Kaydet (Admin)</h3>
+
+<form id="saveDoctorForm">
+    <label>Kullanıcı Adı: <input type="text" id="username" required /></label><br/>
+    <label>İsim: <input type="text" id="name" required /></label><br/>
+    <label>Soyisim: <input type="text" id="surname" required /></label><br/>
+    <label>Doğum Tarihi: <input type="date" id="birthDate" required /></label><br/>
+    <label>TC Kimlik No: <input type="text" id="tc" required pattern="^[1-9][0-9]{10}$" /></label><br/>
+    <label>Şifre: <input type="password" id="password" required minlength="8" /></label><br/>
+    <label>Telefon (örnek: 555-555-5555): <input type="text" id="phoneNumber" required pattern="^\(?\d{3}\)?[-.]?\d{3}[-.]?\d{4}$" /></label><br/>
+    <label>Cinsiyet:
+        <select id="gender" required>
+            <option value="">Seçiniz</option>
+            <option value="MALE">Erkek</option>
+            <option value="FEMALE">Kadın</option>
+        </select>
+    </label><br/>
+    <label>Aile Hekimi mi?
+        <select id="familyDoctor" required>
+            <option value="true">Evet</option>
+            <option value="false" selected>Hayır</option>
+        </select>
+    </label><br/>
+    <label>Görev Başlangıç Tarihi: <input type="date" id="dutyStartDate" required /></label><br/>
+    <label>Görev Bitiş Tarihi: <input type="date" id="dutyEndDate" required /></label><br/>
+    <label>Başlangıç Saati: <input type="time" id="startTime" required /></label><br/>
+    <label>Bitiş Saati: <input type="time" id="endTime" required /></label><br/>
+    <button type="submit">Kaydet</button>
+</form>
+
+<p id="resultMessage" style="color: green;"></p>
+<p id="errorMessage" style="color: red;"></p>
+
+<script>
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+        alert("Yetkisiz erişim! Giriş yapmalısınız.");
+        window.location.href = "static/login.html";
+    } else {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const role = payload.roles[0];
+        if (role !== "ADMIN") {
+            alert("Yetkisiz erişim! Sadece adminler giriş yapabilir.");
+            window.location.href = "static/login.html";
+        }
+    }
+
+    document.getElementById("saveDoctorForm").addEventListener("submit", function(event) {
+        event.preventDefault();
+
+        const doctorData = {
+            username: document.getElementById("username").value,
+            name: document.getElementById("name").value,
+            surname: document.getElementById("surname").value,
+            birthDate: document.getElementById("birthDate").value,
+            tc: document.getElementById("tc").value,
+            password: document.getElementById("password").value,
+            phoneNumber: document.getElementById("phoneNumber").value,
+            gender: document.getElementById("gender").value,
+            familyDoctor: document.getElementById("familyDoctor").value === "true",
+            dutyStartDate: document.getElementById("dutyStartDate").value,
+            dutyEndDate: document.getElementById("dutyEndDate").value,
+            startTime: document.getElementById("startTime").value,
+            endTime: document.getElementById("endTime").value
+        };
+
+        fetch("http://localhost:8080/doctor/save", {
+            method: "POST",
+            headers: {
+                "Authorization": "Bearer " + token,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(doctorData)
+        })
+        .then(res => {
+            if (!res.ok) {
+                return res.json().then(data => Promise.reject(data.message || "Kaydetme başarısız"));
+            }
+            return res.json();
+        })
+        .then(response => {
+            document.getElementById("resultMessage").innerText = "Doktor başarıyla kaydedildi!";
+            document.getElementById("errorMessage").innerText = "";
+            this.reset();
+        })
+        .catch(err => {
+            document.getElementById("errorMessage").innerText = err;
+            document.getElementById("resultMessage").innerText = "";
+        });
+    });
+</script>
+
+</body>
+</html>

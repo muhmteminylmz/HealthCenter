@@ -1,0 +1,16 @@
+function deleteLabTest(id) {
+if(!confirm("Bu laboratuvar testini silmek istediğinize emin misiniz?")) return;
+
+const token = localStorage.getItem("token");
+
+fetch(`/labTest/delete/${id}`, {
+method: "DELETE",
+headers: { "Authorization": "Bearer " + token }
+})
+.then(res => res.json())
+.then(response => {
+alert(response.message || "Silme işlemi tamamlandı.");
+// Sayfa yenile veya listeyi güncelle
+})
+.catch(err => alert("Silme işlemi başarısız: " + err));
+}

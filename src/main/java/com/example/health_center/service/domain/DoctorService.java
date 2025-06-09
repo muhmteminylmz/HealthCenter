@@ -25,7 +25,7 @@ public class DoctorService {
 
     private final DoctorRepository doctorRepository;
     private final FamilyDoctorService familyDoctorService;
-    private final MedicalReportService medicalReportService;
+    //private final MedicalReportService medicalReportService;
 
     private final FieldControl fieldControl;
     private final PasswordEncoder passwordEncoder;

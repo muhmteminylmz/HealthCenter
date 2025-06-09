@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8" />
+    <title>Benim Muayenelerim (Doktor)</title>
+</head>
+<body>
+
+<h3>Benim Muayenelerim</h3>
+
+<table border="1" cellpadding="8" cellspacing="0">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Muayene Tarihi</th>
+        <th>Tanı</th>
+        <th>Hasta</th>
+        <th>Alerjiler</th>
+        <th>Hastalıklar</th>
+        <th>Randevu ID</th>
+    </tr>
+    </thead>
+    <tbody id="examBody">
+    <tr><td colspan="7">Yükleniyor...</td></tr>
+    </tbody>
+</table>
+
+<p id="errorMessage" style="color: red;"></p>
+
+<script>
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+    alert("Yetkisiz erişim! Giriş yapmalısınız.");
+    window.location.href = "static/login.html";
+    } else {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    const role = payload.roles[0];
+    if (role !== "DOCTOR") {
+    alert("Yetkisiz erişim! Sadece doktorlar giriş yapabilir.");
+    window.location.href = "static/login.html";
+    }
+}
+
+fetch("http://localhost:8080/examination/getExaminationsByDoctor", {
+  headers: {
+    "Authorization": "Bearer " + token
+  }
+})
+.then(res => res.ok ? res.json() : Promise.reject("Veri alınamadı"))
+.then(data => {
+  const tbody = document.getElementById("examBody");
+  tbody.innerHTML = "";
+
+  if (!data || data.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7">Kayıtlı muayene yok.</td></tr>`;
+    return;
+  }
+
+  data.forEach(e => {
+    const allergies = e.allergies && e.allergies.length > 0
+      ? e.allergies.map(a => a.name).join(", ")
+      : "-";
+
+    const diseases = e.diseases && e.diseases.length > 0
+      ? e.diseases.map(d => d.name).join(", ")
+      : "-";
+
+    tbody.innerHTML += `
+      <tr>
+        <td>${e.id}</td>
+        <td>${new Date(e.examinationDate).toLocaleString("tr-TR")}</td>
+        <td>${e.diagnosis || "-"}</td>
+        <td>${e.patient ? e.patient.name + " " + e.patient.surname : "-"}</td>
+        <td>${allergies}</td>
+        <td>${diseases}</td>
+        <td>${e.appointment ? e.appointment.id : "-"}</td>
+      </tr>`;
+  });
+})
+.catch(err => {
+  document.getElementById("errorMessage").innerText = err;
+});
+</script>
+
+</body>
+</html>

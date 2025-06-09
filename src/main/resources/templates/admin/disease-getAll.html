@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8" />
+    <title>Hastalıklar - Tümünü Görüntüle (Admin)</title>
+</head>
+<body>
+<h3>Hastalıklar Listesi (Admin)</h3>
+
+<table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse; width: 100%;">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Adı</th>
+        <th>Kod</th>
+    </tr>
+    </thead>
+    <tbody id="diseasesBody">
+    <tr><td colspan="3">Yükleniyor...</td></tr>
+    </tbody>
+</table>
+
+<p id="errorMessage" style="color: red;"></p>
+
+<script>
+    const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
+
+    if (!token || role !== "ADMIN") {
+        alert("Bu sayfaya erişim yetkiniz yok!");
+        window.location.href = "static/login.html";
+    }
+
+    function loadDiseases() {
+        fetch("http://localhost:8080/diseases", {
+            headers: {
+                "Authorization": "Bearer " + token
+            }
+        })
+        .then(res => {
+            if (!res.ok) {
+                throw new Error("Hastalıklar alınamadı.");
+            }
+            return res.json();
+        })
+        .then(diseases => {
+            const tbody = document.getElementById("diseasesBody");
+            tbody.innerHTML = "";
+
+            if (diseases.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="3">Hastalık bulunmamaktadır.</td></tr>`;
+                return;
+            }
+
+            diseases.forEach(d => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${d.id}</td>
+                        <td>${d.name}</td>
+                        <td>${d.code}</td>
+                    </tr>
+                `;
+            });
+        })
+        .catch(error => {
+            document.getElementById("errorMessage").innerText = error.message;
+        });
+    }
+
+    loadDiseases();
+</script>
+
+</body>
+</html>

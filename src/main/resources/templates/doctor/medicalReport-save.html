@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8" />
+    <title>Yeni Medical Report Ekle</title>
+</head>
+<body>
+<h3>Yeni Medical Report Ekle</h3>
+
+<form id="medicalReportForm">
+    <label>Rapor Adı: <input type="text" name="name" required minlength="2" maxlength="50" /></label><br/>
+    <label>Açıklama: <textarea name="description" maxlength="255"></textarea></label><br/>
+    <label>Başlangıç Tarihi: <input type="date" name="startDate" required /></label><br/>
+    <label>Bitiş Tarihi: <input type="date" name="endDate" required /></label><br/>
+    <label>Tanı ID: <input type="number" name="diagnosisId" required min="1" /></label><br/>
+    <label>Hasta ID: <input type="number" name="patientId" required min="1" /></label><br/>
+    <label>Doktor ID: <input type="number" name="doctorId" required min="1" /></label><br/>
+    <button type="submit">Kaydet</button>
+</form>
+
+<p id="message" style="color: red;"></p>
+
+<script>
+    const token = localStorage.getItem("token");
+    if (!token) window.location.href = "/login.html";
+
+    document.getElementById("medicalReportForm").addEventListener("submit", function(e) {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+
+        const reportData = {
+            name: formData.get("name"),
+            description: formData.get("description"),
+            startDate: formData.get("startDate"),
+            endDate: formData.get("endDate"),
+            diagnosisId: Number(formData.get("diagnosisId")),
+            patientId: Number(formData.get("patientId")),
+            doctorId: Number(formData.get("doctorId"))
+        };
+
+        fetch("/medical-report/save", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + token
+            },
+            body: JSON.stringify(reportData)
+        })
+        .then(res => {
+            if (!res.ok) throw new Error("Medical report kaydedilemedi.");
+            return res.json();
+        })
+        .then(data => {
+            document.getElementById("message").style.color = "green";
+            document.getElementById("message").innerText = "Medical report başarıyla kaydedildi.";
+            e.target.reset();
+        })
+        .catch(err => {
+            document.getElementById("message").style.color = "red";
+            document.getElementById("message").innerText = err.message;
+        });
+    });
+</script>
+</body>
+</html>

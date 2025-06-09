@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8" />
+    <title>Admin Ekle</title>
+</head>
+<body>
+<h3>Yeni Admin Ekle</h3>
+
+<form id="adminForm">
+    <label>Kullanıcı Adı: <input type="text" name="username" required minlength="4" maxlength="16" /></label><br/>
+    <label>İsim: <input type="text" name="name" required minlength="2" maxlength="16" /></label><br/>
+    <label>Soyisim: <input type="text" name="surname" required minlength="2" maxlength="16" /></label><br/>
+    <label>Doğum Tarihi: <input type="date" name="birthDate" required /></label><br/>
+    <label>TC No: <input type="text" name="tc" required pattern="^[1-9][0-9]{10}$" /></label><br/>
+    <label>Şifre: <input type="password" name="password" required minlength="8" maxlength="60" /></label><br/>
+    <label>Telefon: <input type="text" name="phoneNumber" required pattern="^\\(?\\d{3}\\)?[-.]?\\d{3}[-.]?\\d{4}$" /></label><br/>
+    <label>Cinsiyet:
+        <select name="gender" required>
+            <option value="">Seçiniz</option>
+            <option value="MALE">Erkek</option>
+            <option value="FEMALE">Kadın</option>
+            <option value="OTHER">Diğer</option>
+        </select>
+    </label><br/>
+    <label>Built In: <input type="checkbox" name="built_in" /></label><br/>
+    <button type="submit">Kaydet</button>
+</form>
+
+<p id="message" style="color: red;"></p>
+
+<script>
+    const token = localStorage.getItem("token");
+    if (!token) window.location.href = "static/login.html";
+
+    document.getElementById("adminForm").addEventListener("submit", function(e) {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+
+        const adminData = {
+            username: formData.get("username"),
+            name: formData.get("name"),
+            surname: formData.get("surname"),
+            birthDate: formData.get("birthDate"),
+            tc: formData.get("tc"),
+            password: formData.get("password"),
+            phoneNumber: formData.get("phoneNumber"),
+            gender: formData.get("gender"),
+            built_in: formData.get("built_in") === "on"
+        };
+
+        fetch("http://localhost:8080/admin/save", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + token
+            },
+            body: JSON.stringify(adminData)
+        })
+        .then(res => {
+            if(!res.ok) throw new Error("Admin kaydedilemedi.");
+            return res.json();
+        })
+        .then(data => {
+            document.getElementById("message").style.color = "green";
+            document.getElementById("message").innerText = "Admin başarıyla kaydedildi.";
+            e.target.reset();
+        })
+        .catch(err => {
+            document.getElementById("message").style.color = "red";
+            document.getElementById("message").innerText = err.message;
+        });
+    });
+</script>
+</body>
+</html>

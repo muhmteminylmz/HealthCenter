@@ -44,7 +44,7 @@ public class PatientController {
         return patientService.getById(id);
     }
 
-    @PreAuthorize("#patientId == authentication.principal.id or hasRole('PATIENT')")
+    @PreAuthorize("#patientId == authentication.principal.id")
     @PostMapping("/{patientId}/allergies")
     public ResponseMessage<?> addAllergiesToPatient(
             @PathVariable @Valid Long patientId,

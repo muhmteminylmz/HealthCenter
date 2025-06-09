@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8" />
+    <title>Dashboard - Health Center</title>
+    <style>
+        body {
+            display: flex;
+            margin: 0;
+            font-family: sans-serif;
+            height: 100vh;
+            overflow: hidden;
+        }
+        #sidebar {
+            width: 220px;
+            background-color: #f3f3f3;
+            padding: 20px;
+            height: 100vh;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+            box-sizing: border-box;
+        }
+        #content {
+            flex-grow: 1;
+            padding: 20px;
+            box-sizing: border-box;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .menu-item {
+            display: block;
+            margin: 10px 0;
+            cursor: pointer;
+            color: #007bff;
+            text-decoration: underline;
+        }
+        #mainFrame {
+            flex-grow: 1;
+            width: 100%;
+            border: none;
+        }
+        button {
+            margin-top: 20px;
+            padding: 10px;
+            width: 100%;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div id="sidebar">
+    <h3>Menü</h3>
+    <div id="menuItems"></div>
+    <hr/>
+    <button onclick="logout()">Çıkış Yap</button>
+</div>
+
+<div id="content">
+    <h2>Hoş geldiniz</h2>
+    <iframe id="mainFrame" src=""></iframe>
+</div>
+
+<script>
+    // Token kontrolü
+    const token = localStorage.getItem("token");
+    if (!token) {
+        window.location.href = "login.html";
+    }
+
+    // Token payload parse et
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    const role = payload.roles[0]; // Varsayılan tek rol
+    const username = payload.sub;
+
+    // Hoşgeldin mesajını güncelle
+    document.querySelector("#content > h2").innerText = `Hoş geldiniz, ${username} (${role})`;
+
+    // Menü seçenekleri
+    const roleMenus = {
+        PATIENT: [
+            { label: "Randevu Oluştur", page: "/templates/patient/appointment-create.html" },
+            { label: "Randevularım", page: "/templates/patient/my-appointments-patient.html" },
+            { label: "Reçetelerim", page: "/templates/patient/prescription-list.html" },
+            { label: "Hastalıklarım", page: "/templates/patient/myDiseases.html" },
+            { label: "Alerjilerim", page: "/templates/patient/allergies-list.html" }
+        ],
+        DOCTOR: [
+            { label: "Randevularım", page: "/templates/doctor/my-appointments-doctor.html" },
+            { label: "Reçetelerim", page: "/templates/doctor/prescription-list.html" },
+            { label: "Muayne olustur", page: "/templates/doctor/examination-save.html" },
+            { label: "Muaynelerim", page: "/templates/doctor/my-examinations.html" },
+            { label: "Recete yaz", page: "/templates/doctor/prescription-save.html" },
+            { label: "Laboratuvar Testlerim", page: "/templates/doctor/labTest-list.html" }
+        ],
+        ADMIN: [
+            { label: "Tüm Adminler", page: "/templates/admin/admin-list.html" },
+            { label: "Tüm doktorlar", page: "/templates/admin/doctor-getAll.html" },
+            { label: "Tüm Hastalar", page: "/templates/common/patient-list.html" },
+            { label: "Doktor ekle", page: "/templates/admin/doctor-save.html" },
+            { label: "Hasta Ekle", page: "/templates/admin/patient-save.html" },
+            { label: "Doktor Sil", page: "/templates/admin/doctor-delete.html" }
+        ]
+    };
+
+    const menus = roleMenus[role] || [];
+    const menuItemsDiv = document.getElementById("menuItems");
+    const mainFrame = document.getElementById("mainFrame");
+
+    // Menüleri oluştur
+    menus.forEach(menu => {
+        const link = document.createElement("div");
+        link.className = "menu-item";
+        link.innerText = menu.label;
+        link.onclick = () => {
+            mainFrame.src = menu.page;
+        };
+        menuItemsDiv.appendChild(link);
+    });
+
+    // İlk menü otomatik açılır
+    if (menus.length > 0) {
+        mainFrame.src = menus[0].page;
+    } else {
+        mainFrame.src = "";
+        document.getElementById("content").innerHTML += "<p>Menü bulunamadı.</p>";
+    }
+
+    // Çıkış yap fonksiyonu
+    function logout() {
+        localStorage.removeItem("token");
+        window.location.href = "login.html";
+    }
+</script>
+
+</body>
+</html>

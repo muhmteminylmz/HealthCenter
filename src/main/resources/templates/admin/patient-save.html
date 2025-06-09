@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8" />
+    <title>Yeni Hasta Kayıt</title>
+</head>
+<body>
+<h3>Yeni Hasta Kayıt</h3>
+
+<form id="patientForm">
+    <label>Kullanıcı Adı: <input type="text" name="username" required minlength="4" maxlength="16" pattern="^(?!\s*$).+" /></label><br/>
+    <label>İsim: <input type="text" name="name" required minlength="2" maxlength="16" /></label><br/>
+    <label>Soyisim: <input type="text" name="surname" required minlength="2" maxlength="16" /></label><br/>
+    <label>Doğum Tarihi: <input type="date" name="birthDate" required /></label><br/>
+    <label>TC No: <input type="text" name="tc" required pattern="^[1-9][0-9]{10}$" /></label><br/>
+    <label>Telefon: <input type="text" name="phoneNumber" required pattern="^\\(?\\d{3}\\)?[-.]?\\d{3}[-.]?\\d{4}$" /></label><br/>
+    <label>Parola: <input type="password" name="password" required minlength="8" maxlength="60" /></label><br/>
+    <label>Cinsiyet:
+        <select name="gender" required>
+            <option value="">Seçiniz</option>
+            <option value="MALE">Erkek</option>
+            <option value="FEMALE">Kadın</option>
+        </select>
+    </label><br/>
+    <label>Kan Grubu:
+        <select name="bloodType" required>
+            <option value="">Seçiniz</option>
+            <option value="A_POSITIVE">A+</option>
+            <option value="B_POSITIVE">B+</option>
+            <option value="AB_POSITIVE">AB+</option>
+            <option value="O_POSITIVE">O+</option>
+            <option value="A_NEGATIVE">A-</option>
+            <option value="B_NEGATIVE">B-</option>
+            <option value="AB_NEGATIVE">AB-</option>
+            <option value="O_NEGATIVE">O-</option>
+        </select>
+    </label><br/>
+    <label>Alerjiler:
+        <select name="allergyIds" id="allergySelect" multiple placeholder="Alerji seçin (isteğe bağlı)"></select>
+    </label><br/>
+    <br/>
+    <button type="submit">Kaydet</button>
+</form>
+
+<p id="message" style="color: red;"></p>
+
+<script>
+    const token = localStorage.getItem("token");
+    if (!token) window.location.href = "static/login.html";
+
+    // Alerji listesini API'den çek ve select'e ekle
+    fetch("http://localhost:8080/allergies/getAll", {
+        headers: {
+            "Authorization": "Bearer " + token
+        }
+    })
+    .then(res => {
+        if (!res.ok) throw new Error("Alerji listesi alınamadı.");
+        return res.json();
+    })
+    .then(allergies => {
+        const allergySelect = document.getElementById("allergySelect");
+        allergies.forEach(allergy => {
+            const option = document.createElement("option");
+            option.value = allergy.id;
+            option.textContent = allergy.name;
+            allergySelect.appendChild(option);
+        });
+    })
+    .catch(err => {
+        console.error("Alerji listesi yüklenirken hata:", err);
+    });
+
+    // Hasta kayıt işlemi
+    document.getElementById("patientForm").addEventListener("submit", function(e) {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+
+        const patientData = {
+            username: formData.get("username"),
+            name: formData.get("name"),
+            surname: formData.get("surname"),
+            birthDate: formData.get("birthDate"),
+            tc: formData.get("tc"),
+            phoneNumber: formData.get("phoneNumber"),
+            gender: formData.get("gender"),
+            bloodType: formData.get("bloodType"),
+            password: formData.get("password"),
+            allergyIds: Array.from(formData.getAll("allergyIds"))
+        };
+
+        fetch("http://localhost:8080/patient/save", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + token
+            },
+            body: JSON.stringify(patientData)
+        })
+        .then(res => {
+            if (!res.ok) throw new Error("Hasta kaydedilemedi.");
+            return res.json();
+        })
+        .then(data => {
+            document.getElementById("message").style.color = "green";
+            document.getElementById("message").innerText = "Hasta başarıyla kaydedildi.";
+            e.target.reset();
+        })
+        .catch(err => {
+            document.getElementById("message").style.color = "red";
+            document.getElementById("message").innerText = err.message;
+        });
+    });
+</script>
+</body>
+</html>

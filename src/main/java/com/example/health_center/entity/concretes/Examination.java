@@ -54,7 +54,7 @@ public class Examination {
     @ManyToMany(mappedBy = "examinations", fetch = FetchType.LAZY)
     private List<Nurse> nurses;
 
-    @OneToOne(mappedBy = "examination")
+    @OneToOne
     private Appointment appointment;
 
     /*@PrePersist

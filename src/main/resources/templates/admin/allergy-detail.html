@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8" />
+    <title>Alerji Detayı</title>
+</head>
+<body>
+<h3>Alerji Detayı</h3>
+
+<div id="allergyDetails">Yükleniyor...</div>
+
+<p id="errorMessage" style="color: red;"></p>
+
+<script>
+    const token = localStorage.getItem("token");
+    if (!token) window.location.href = "static/login.html";
+
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get("id");
+    if (!id) {
+        document.getElementById("errorMessage").innerText = "Geçersiz ID.";
+        document.getElementById("allergyDetails").innerText = "";
+    } else {
+        fetch(`http://localhost:8080/allergies/getById/${id}`, {
+            headers: {
+                "Authorization": "Bearer " + token
+            }
+        })
+        .then(res => {
+            if (!res.ok) throw new Error("Detay alınamadı.");
+            return res.json();
+        })
+        .then(responseMessage => {
+            // ResponseMessage<AllergyResponse> yapısı varsayımıyla:
+            const allergy = responseMessage.data;
+            if (!allergy) {
+                throw new Error("Alerji bulunamadı.");
+            }
+            document.getElementById("allergyDetails").innerHTML = `
+                <p><strong>ID:</strong> ${allergy.id}</p>
+                <p><strong>Alerji Adı:</strong> ${allergy.name}</p>
+                <p><strong>Kod:</strong> ${allergy.code}</p>
+            `;
+        })
+        .catch(err => {
+            document.getElementById("errorMessage").innerText = err.message;
+            document.getElementById("allergyDetails").innerText = "";
+        });
+    }
+</script>
+</body>
+</html>

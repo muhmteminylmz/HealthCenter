@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8" />
+    <title>Randevularım</title>
+</head>
+<body>
+<h3>Randevularım</h3>
+
+<table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse; width: 100%;">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Tarih</th>
+        <th>Durum</th>
+        <th>İptal Nedeni</th>
+        <th>Doktor</th>
+    </tr>
+    </thead>
+    <tbody id="appointmentBody">
+    <tr><td colspan="5">Yükleniyor...</td></tr>
+    </tbody>
+</table>
+
+<p id="errorMessage" style="color: red;"></p>
+
+<h3>Yeni Randevu Oluştur</h3>
+<form id="appointmentForm">
+    <label for="appointmentDate">Randevu Tarihi:</label>
+    <input type="datetime-local" id="appointmentDate" name="appointmentDate" required /><br/><br/>
+
+    <label for="doctorId">Doktor ID:</label>
+    <input type="number" id="doctorId" name="doctorId" required /><br/><br/>
+
+    <button type="submit">Randevu Oluştur</button>
+</form>
+
+<script>
+    const token = localStorage.getItem("token");
+    if (!token) window.location.href = "static/login.html";
+
+    function getUserIdFromToken() {
+        const token = localStorage.getItem("token");
+        if (!token) return null;
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        return payload.id;
+    }
+
+    async function loadAppointments() {
+        try {
+            const res = await fetch('http://localhost:8080/appointment/getAppointmentsByUserForPatient', {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            if (!res.ok) throw new Error('Randevular alınamadı.');
+
+            const appointments = await res.json();
+            const tbody = document.getElementById('appointmentBody');
+            tbody.innerHTML = '';
+
+            if (appointments.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5">Randevu bulunmamaktadır.</td></tr>';
+                return;
+            }
+
+            appointments.forEach(a => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${a.id}</td>
+                        <td>${new Date(a.appointmentDate).toLocaleString('tr-TR')}</td>
+                        <td>${a.status}</td>
+                        <td>${a.cancellationReason ? a.cancellationReason : '-'}</td>
+                        <td>${a.doctorName}</td>
+                    </tr>
+                `;
+            });
+        } catch (err) {
+            document.getElementById('errorMessage').innerText = err.message;
+        }
+    }
+
+    document.getElementById('appointmentForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const appointmentDate = document.getElementById('appointmentDate').value;
+        const doctorId = parseInt(document.getElementById('doctorId').value, 10);
+        const patientId = getUserIdFromToken();
+
+        if (!appointmentDate || !doctorId || !patientId) {
+            alert('Tüm alanları doldurun.');
+            return;
+        }
+
+        try {
+            const res = await fetch('http://localhost:8080/appointment/save', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                },
+                body: JSON.stringify({
+                    appointmentDate,
+                    doctorId,
+                    patientId
+                })
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) throw new Error(data.message || 'Randevu oluşturulamadı.');
+
+            alert('Randevu başarıyla oluşturuldu.');
+            loadAppointments();
+        } catch (err) {
+            alert(err.message);
+        }
+    });
+
+    loadAppointments();
+</script>
+</body>
+</html>

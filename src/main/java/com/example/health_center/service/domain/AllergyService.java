@@ -2,10 +2,12 @@ package com.example.health_center.service.domain;
 
 import com.example.health_center.controller.AllergyController;
 import com.example.health_center.entity.concretes.Allergy;
+import com.example.health_center.entity.concretes.Patient;
 import com.example.health_center.exception.ResourceNotFoundException;
 import com.example.health_center.payload.response.AllergyResponse;
 import com.example.health_center.payload.response.ResponseMessage;
 import com.example.health_center.repository.AllergyRepository;
+import com.example.health_center.repository.PatientRepository;
 import com.example.health_center.utils.Messages;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,6 +21,7 @@ import java.util.stream.Collectors;
 public class AllergyService {
 
     private final AllergyRepository allergyRepository;
+    private final PatientRepository patientRepository;
 
     public List<AllergyResponse> getAll() {
 
@@ -29,9 +32,14 @@ public class AllergyService {
 
     public List<AllergyResponse> getByPatient(Long patientId) {
 
-        return allergyRepository.findAllByPatientId(patientId).stream().
-                map(this::createAllergyResponse).
-                collect(Collectors.toList());
+        Patient patient = patientRepository.findById(patientId).orElseThrow(()->
+                new ResourceNotFoundException(String.format(Messages.NOT_FOUND_USER2_MESSAGE,patientId)));
+        //ManyToMany patient ten jointable yapildigi icin patient tablosundan cekilmeli veri
+        //Normalde Repo ya baska service den erismem deneme amacli
+
+        return  patient.getAllergies().stream()
+                .map(this::createAllergyResponse)
+                .collect(Collectors.toList());
     }
 
     public ResponseMessage<AllergyResponse> getById(Long id) {

@@ -38,16 +38,6 @@ public class AllergyLoaderService implements ApplicationRunner {
 
             List<Allergy> allergies = new ArrayList<>();
 
-            if (!existingCodes.contains("00")) {
-                allergies.add(
-                        Allergy.builder()
-                                .code("00")
-                                .name("None")
-                                .build()
-                );
-                existingCodes.add("00");
-            }
-
             for (CSVRecord record : csvParser) {
                 String code = record.get(0);
                 String name = record.get(1);

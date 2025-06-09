@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8" />
+    <title>Doktorun Laboratuvar Testleri</title>
+</head>
+<body>
+
+<h3>Kendi Laboratuvar Testlerim</h3>
+
+<table border="1" cellpadding="8" cellspacing="0">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Test Türü</th>
+        <th>Test Tarihi</th>
+        <th>Durum</th>
+        <th>Sonuç</th>
+        <th>Fiyat</th>
+        <th>Hasta</th>
+    </tr>
+    </thead>
+    <tbody id="labTestBody">
+    <tr><td colspan="7">Yükleniyor...</td></tr>
+    </tbody>
+</table>
+
+<p id="errorMessage" style="color:red;"></p>
+
+<script>
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+    alert("Yetkisiz erişim! Giriş yapmalısınız.");
+    window.location.href = "static/login.html";
+    } else {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    const role = payload.roles[0];
+    if (role !== "DOCTOR") {
+    alert("Yetkisiz erişim! Sadece doktorlar giriş yapabilir.");
+    window.location.href = "static/login.html";
+    }
+}
+
+    fetch("http://localhost:8080/labTest/getLabTestsByUsernameForDoctor", {
+        headers: { "Authorization": "Bearer " + token }
+    })
+    .then(res => res.ok ? res.json() : Promise.reject("Veri alınamadı"))
+    .then(data => {
+        const tbody = document.getElementById("labTestBody");
+        tbody.innerHTML = "";
+        if (data.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7">Test bulunamadı.</td></tr>`;
+            return;
+        }
+        data.forEach(test => {
+            tbody.innerHTML += `
+                <tr>
+                    <td>${test.id}</td>
+                    <td>${test.testType}</td>
+                    <td>${new Date(test.testDate).toLocaleString("tr-TR")}</td>
+                    <td>${test.status}</td>
+                    <td>${test.testResult || "-"}</td>
+                    <td>${test.price} ₺</td>
+                    <td>${test.patientName} (ID: ${test.patientId})</td>
+                </tr>`;
+        });
+        document.getElementById("errorMessage").innerText = "";
+    })
+    .catch(err => {
+        document.getElementById("errorMessage").innerText = err;
+        document.getElementById("labTestBody").innerHTML = `<tr><td colspan="7">Veri yüklenemedi.</td></tr>`;
+    });
+</script>
+
+</body>
+</html>

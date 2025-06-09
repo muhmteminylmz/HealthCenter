@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8" />
+    <title>Laboratuvar Testi Güncelle</title>
+</head>
+<body>
+
+<h3>Laboratuvar Testi Güncelle</h3>
+
+<label>Güncellenecek Test ID:
+    <input type="number" id="labTestId" required />
+</label>
+<button id="fetchBtn">Test Bilgilerini Getir</button>
+
+<form id="updateLabTestForm" style="display:none; margin-top:20px;">
+    <label>Test Türü:
+        <select name="testType" required>
+            <option value="">Seçiniz</option>
+            <option value="BLOOD">Kan</option>
+            <option value="URINE">İdrar</option>
+            <option value="XRAY">Röntgen</option>
+        </select>
+    </label><br/><br/>
+
+    <label>Test Tarihi:
+        <input type="datetime-local" name="testDate" required />
+    </label><br/><br/>
+
+    <label>Test Sonucu:
+        <textarea name="testResult" rows="3" placeholder="Varsa sonucu girin"></textarea>
+    </label><br/><br/>
+
+    <label>Durum:
+        <select name="status" required>
+            <option value="">Seçiniz</option>
+            <option value="PENDING">Beklemede</option>
+            <option value="COMPLETED">Tamamlandı</option>
+            <option value="CANCELED">İptal Edildi</option>
+        </select>
+    </label><br/><br/>
+
+    <label>Fiyat (₺):
+        <input type="number" name="price" min="0" required />
+    </label><br/><br/>
+
+    <label>İlgili Muayene ID:
+        <input type="number" name="examinationId" required />
+    </label><br/><br/>
+
+    <button type="submit">Güncelle</button>
+</form>
+
+<p id="message" style="color:green;"></p>
+<p id="errorMessage" style="color:red;"></p>
+
+<script>
+    const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
+
+    if (!token || !["ADMIN", "DOCTOR", "CHIEFDOCTOR"].includes(role)) {
+        alert("Bu sayfaya erişim yetkiniz yok!");
+        window.location.href = "/common/login.html";
+    }
+
+    const fetchBtn = document.getElementById("fetchBtn");
+    const labTestIdInput = document.getElementById("labTestId");
+    const form = document.getElementById("updateLabTestForm");
+
+    fetchBtn.addEventListener("click", () => {
+        const id = labTestIdInput.value;
+        if (!id) {
+            alert("Lütfen geçerli bir Test ID girin.");
+            return;
+        }
+        fetch(`/labTest/getById/${id}`, {
+            headers: { "Authorization": "Bearer " + token }
+        })
+        .then(res => {
+            if (!res.ok) return res.json().then(err => Promise.reject(err.message || "Veri alınamadı"));
+            return res.json();
+        })
+        .then(response => {
+            const test = response.data;
+            form.style.display = "block";
+            form.testType.value = test.testType;
+            // Backend'den gelen ISO tarih stringini input datetime-local formatına çeviriyoruz:
+            const dt = new Date(test.testDate);
+            const localISO = dt.toISOString().slice(0,16);
+            form.testDate.value = localISO;
+            form.testResult.value = test.testResult || "";
+            form.status.value = test.status;
+            form.price.value = test.price;
+            form.examinationId.value = test.examinationId || ""; // eğer varsa
+            document.getElementById("message").innerText = "";
+            document.getElementById("errorMessage").innerText = "";
+        })
+        .catch(err => {
+            form.style.display = "none";
+            document.getElementById("errorMessage").innerText = err;
+            document.getElementById("message").innerText = "";
+        });
+    });
+
+    form.addEventListener("submit", function(e) {
+        e.preventDefault();
+        const id = labTestIdInput.value;
+        const formData = new FormData(this);
+        const data = {
+            testType: formData.get("testType"),
+            testDate: new Date(formData.get("testDate")).toISOString(),
+            testResult: formData.get("testResult") || null,
+            status: formData.get("status"),
+            price: parseInt(formData.get("price")),
+            examinationId: parseInt(formData.get("examinationId"))
+        };
+
+        fetch(`/labTest/update/${id}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + token
+            },
+            body: JSON.stringify(data)
+        })
+        .then(res => {
+            if (!res.ok) return res.json().then(err => Promise.reject(err.message || "Güncelleme başarısız"));
+            return res.json();
+        })
+        .then(response => {
+            document.getElementById("message").innerText = "Laboratuvar testi başarıyla güncellendi.";
+            document.getElementById("errorMessage").innerText = "";
+        })
+        .catch(err => {
+            document.getElementById("errorMessage").innerText = err;
+            document.getElementById("message").innerText = "";
+        });
+    });
+</script>
+
+</body>
+</html>
