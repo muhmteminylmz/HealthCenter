@@ -3,11 +3,104 @@
 <head>
     <meta charset="UTF-8" />
     <title>Randevularım</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f9f9f9;
+            margin: 0; padding: 20px;
+            color: #333;
+        }
+        h3 {
+            background-color: #4caf50;
+            color: white;
+            padding: 12px 0;
+            text-align: center;
+            margin: 0 0 20px 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border-radius: 6px;
+        }
+        table {
+            width: 95%;
+            max-width: 1100px;
+            margin: 0 auto 30px auto;
+            border-collapse: collapse;
+            background: white;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        thead {
+            background-color: #4caf50;
+            color: white;
+        }
+        thead th {
+            padding: 12px 15px;
+            font-weight: 600;
+            text-align: left;
+        }
+        tbody td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #ddd;
+            font-size: 0.95em;
+        }
+        tbody tr:hover {
+            background-color: #f1f9f1;
+        }
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+        #errorMessage {
+            color: red;
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 30px;
+        }
+        form {
+            width: 95%;
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        form label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: #4caf50;
+        }
+        form input[type="datetime-local"],
+        form input[type="number"] {
+            width: 100%;
+            padding: 8px 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1em;
+            box-sizing: border-box;
+        }
+        form button {
+            background-color: #4caf50;
+            border: none;
+            color: white;
+            padding: 12px 25px;
+            font-size: 1em;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            width: 100%;
+        }
+        form button:hover {
+            background-color: #45a049;
+        }
+    </style>
 </head>
 <body>
+
 <h3>Randevularım</h3>
 
-<table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse; width: 100%;">
+<table>
     <thead>
     <tr>
         <th>ID</th>
@@ -18,19 +111,19 @@
     </tr>
     </thead>
     <tbody id="appointmentBody">
-    <tr><td colspan="5">Yükleniyor...</td></tr>
+    <tr><td colspan="5" style="text-align:center;">Yükleniyor...</td></tr>
     </tbody>
 </table>
 
-<p id="errorMessage" style="color: red;"></p>
+<p id="errorMessage"></p>
 
 <h3>Yeni Randevu Oluştur</h3>
 <form id="appointmentForm">
     <label for="appointmentDate">Randevu Tarihi:</label>
-    <input type="datetime-local" id="appointmentDate" name="appointmentDate" required /><br/><br/>
+    <input type="datetime-local" id="appointmentDate" name="appointmentDate" required />
 
     <label for="doctorId">Doktor ID:</label>
-    <input type="number" id="doctorId" name="doctorId" required /><br/><br/>
+    <input type="number" id="doctorId" name="doctorId" required />
 
     <button type="submit">Randevu Oluştur</button>
 </form>
@@ -39,11 +132,14 @@
     const token = localStorage.getItem("token");
     if (!token) window.location.href = "static/login.html";
 
-    function getUserIdFromToken() {
-        const token = localStorage.getItem("token");
-        if (!token) return null;
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        return payload.id;
+    async function getPatientDetails() {
+        const res = await fetch("http://localhost:8080/patient/myDetails", {
+            headers: {
+                "Authorization": "Bearer " + token
+            }
+        });
+        if (!res.ok) throw new Error("Kullanıcı bilgileri alınamadı.");
+        return await res.json();
     }
 
     async function loadAppointments() {
@@ -58,7 +154,7 @@
             tbody.innerHTML = '';
 
             if (appointments.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5">Randevu bulunmamaktadır.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Randevu bulunmamaktadır.</td></tr>';
                 return;
             }
 
@@ -83,14 +179,18 @@
 
         const appointmentDate = document.getElementById('appointmentDate').value;
         const doctorId = parseInt(document.getElementById('doctorId').value, 10);
-        const patientId = getUserIdFromToken();
 
-        if (!appointmentDate || !doctorId || !patientId) {
+        if (!appointmentDate || !doctorId) {
             alert('Tüm alanları doldurun.');
             return;
         }
 
         try {
+            // Hasta bilgilerini çekiyoruz
+            const patient = await getPatientDetails();
+            const patientId = patient.userId; // Backend’in döndürdüğü ID alanı
+
+            // Randevu oluşturma isteği
             const res = await fetch('http://localhost:8080/appointment/save', {
                 method: 'POST',
                 headers: {

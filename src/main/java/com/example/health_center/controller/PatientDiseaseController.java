@@ -33,5 +33,11 @@ public class PatientDiseaseController {
         return patientDiseaseService.getDiseasesByPatientId(userDetails.getId());
     }
 
+    /*@DeleteMapping("/delete/{id}")
+    @PreAuthorize("hasAnyAuthority('DOCTOR')")
+    public ResponseEntity<?> deleteDisease(@PathVariable Long id) {
+        return patientDiseaseService.deleteDisease(id);
+    }*/
+
 }
 

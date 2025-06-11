@@ -3,16 +3,65 @@
 <head>
     <meta charset="UTF-8" />
     <title>Hastalıklarım</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            color: #333;
+            margin: 0; padding: 0;
+        }
+        h3 {
+            background-color: #4caf50;
+            color: white;
+            text-align: center;
+            padding: 15px;
+            margin: 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        #diseasesList {
+            max-width: 700px;
+            margin: 20px auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            padding: 20px;
+            min-height: 150px;
+        }
+        #diseasesList p {
+            margin: 6px 0;
+            font-size: 1em;
+        }
+        #diseasesList > div {
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 12px;
+            margin-bottom: 12px;
+        }
+        #diseasesList > div:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        strong {
+            color: #4caf50;
+        }
+        /* Hata mesajı için */
+        #diseasesList.error {
+            color: red;
+            font-weight: bold;
+            text-align: center;
+        }
+    </style>
 </head>
 <body>
 <h3>Hastalıklarım</h3>
 
-<div id="diseasesList"></div>
+<div id="diseasesList">
+    <p>Yükleniyor...</p>
+</div>
 
 <script>
     const token = localStorage.getItem("token");
 
-    // Eğer token yoksa ya da id bulunamazsa login sayfasına yönlendir
     if (!token) window.location.href = "static/login.html";
 
     fetch(`http://localhost:8080/patient-diseases/by-patient`, {
@@ -24,7 +73,7 @@
     .then(diseases => {
         const container = document.getElementById("diseasesList");
         if (diseases.length === 0) {
-            container.innerText = "Henüz herhangi bir hastalık kaydedilmemiş.";
+            container.innerHTML = "<p>Henüz herhangi bir hastalık kaydedilmemiş.</p>";
         } else {
             const list = diseases.map(disease => `
                 <div>
@@ -36,7 +85,9 @@
         }
     })
     .catch(err => {
-        document.getElementById("diseasesList").innerText = err;
+        const container = document.getElementById("diseasesList");
+        container.classList.add("error");
+        container.innerText = err;
     });
 </script>
 

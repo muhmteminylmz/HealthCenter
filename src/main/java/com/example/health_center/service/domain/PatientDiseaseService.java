@@ -4,6 +4,7 @@ import com.example.health_center.entity.concretes.Disease;
 import com.example.health_center.entity.concretes.Patient;
 import com.example.health_center.entity.relations.PatientDisease;
 import com.example.health_center.exception.ConflictException;
+import com.example.health_center.exception.ResourceNotFoundException;
 import com.example.health_center.payload.request.PatientDiseaseRequest;
 import com.example.health_center.payload.response.DiseaseResponse;
 import com.example.health_center.payload.response.PatientDiseaseResponse;
@@ -13,6 +14,7 @@ import com.example.health_center.utils.Messages;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -101,6 +103,11 @@ public class PatientDiseaseService {
                 .map(this::createPatientDiseaseResponse)
                 .collect(Collectors.toList());
     }
+
+    /*public ResponseEntity<?> deleteDisease(Long id) {
+
+
+    }*/
 
 /*
     public void saveAllPatientDiseases(List<PatientDisease> relations) {

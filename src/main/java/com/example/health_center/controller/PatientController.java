@@ -62,6 +62,13 @@ public class PatientController {
         return patientService.getMyPatientsByUsername(username);
     }
 
+    @GetMapping("/myDetails")
+    @PreAuthorize("hasAnyAuthority('PATIENT')")
+    public PatientResponse myDetails(HttpServletRequest httpServletRequest){
+        String username = (String) httpServletRequest.getAttribute("username");
+        return patientService.getPatientByUsername(username);
+    }
+
     @PutMapping("/changeFamilyDoctor")
     @PreAuthorize("hasAnyAuthority('PATIENT')")
     public ResponseMessage<?> changePatientFamilyDoctor(HttpServletRequest request){

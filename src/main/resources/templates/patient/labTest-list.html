@@ -3,12 +3,65 @@
 <head>
     <meta charset="UTF-8" />
     <title>Laboratuvar Testlerim</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f9f9f9;
+            margin: 0; padding: 20px;
+            color: #333;
+        }
+        h3 {
+            background-color: #4caf50;
+            color: white;
+            padding: 12px 0;
+            text-align: center;
+            margin: 0 0 20px 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border-radius: 6px;
+        }
+        table {
+            width: 95%;
+            max-width: 1100px;
+            margin: 0 auto 30px auto;
+            border-collapse: collapse;
+            background: white;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        thead {
+            background-color: #4caf50;
+            color: white;
+        }
+        thead th {
+            padding: 12px 15px;
+            font-weight: 600;
+            text-align: left;
+        }
+        tbody td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #ddd;
+            font-size: 0.95em;
+        }
+        tbody tr:hover {
+            background-color: #f1f9f1;
+        }
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+        #errorMessage {
+            color: red;
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 30px;
+        }
+    </style>
 </head>
 <body>
 
 <h3>Laboratuvar Testlerim</h3>
 
-<table border="1" cellpadding="8" cellspacing="0">
+<table>
     <thead>
     <tr>
         <th>ID</th>
@@ -21,19 +74,24 @@
     </tr>
     </thead>
     <tbody id="labTestBody">
-    <tr><td colspan="7">Yükleniyor...</td></tr>
+    <tr><td colspan="7" style="text-align:center;">Yükleniyor...</td></tr>
     </tbody>
 </table>
 
-<p id="errorMessage" style="color:red;"></p>
+<p id="errorMessage"></p>
 
 <script>
     const token = localStorage.getItem("token");
-    const role = localStorage.getItem("role");
-
-    if (!token || role !== "PATIENT") {
-        alert("Bu sayfaya erişim yetkiniz yok!");
+    if (!token) {
+        alert("Yetkisiz erişim! Giriş yapmalısınız.");
         window.location.href = "static/login.html";
+    } else {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const role = payload.roles[0];
+        if (role !== "PATIENT") {
+            alert("Yetkisiz erişim! Sadece hastalar giriş yapabilir.");
+            window.location.href = "static/login.html";
+        }
     }
 
     fetch("http://localhost:8080/labTest/getLabTestsByUsernameForPatient", {
@@ -44,7 +102,7 @@
         const tbody = document.getElementById("labTestBody");
         tbody.innerHTML = "";
         if (data.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="7">Test bulunamadı.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;">Test bulunamadı.</td></tr>`;
             return;
         }
         data.forEach(test => {
@@ -63,7 +121,7 @@
     })
     .catch(err => {
         document.getElementById("errorMessage").innerText = err;
-        document.getElementById("labTestBody").innerHTML = `<tr><td colspan="7">Veri yüklenemedi.</td></tr>`;
+        document.getElementById("labTestBody").innerHTML = `<tr><td colspan="7" style="text-align:center;">Veri yüklenemedi.</td></tr>`;
     });
 </script>
 

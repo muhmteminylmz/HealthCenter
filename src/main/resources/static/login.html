@@ -2,32 +2,82 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Login - Health Center</title>
+    <title>Login - e-Hayat</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: sans-serif;
+            background: linear-gradient(to bottom, #e0f7fa, #ffffff);
+        }
+        #login-container {
+            width: 350px;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        #logo {
+            font-size: 36px;
+            font-weight: bold;
+            color: #28a745; /* Yeşil renk */
+            margin-bottom: 20px;
+            font-family: 'Pacifico', cursive; /* El yazısı gibi font */
+            transform: rotate(-10deg); /* Yazıyı sağa yatık yapar */
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #28a745; /* Logo ile aynı renk */
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        button:hover {
+            background: #218838; /* Bir ton koyu yeşil */
+        }
+        #errorMessage {
+            color: red;
+            margin-top: 10px;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
 </head>
 <body>
-<h2>Login</h2>
-
-<form id="loginForm">
-    <label for="username">Username:</label><br/>
-    <input type="text" id="username" name="username" required><br/>
-
-    <label for="password">Password:</label><br/>
-    <input type="password" id="password" name="password" required><br/><br/>
-
-    <button type="submit">Login</button>
-</form>
-
-<p id="errorMessage" style="color: red;"></p>
-
+<div id="login-container">
+    <div id="logo">e-Hayat</div>
+    <form id="loginForm">
+        <input type="text" id="username" name="username" placeholder="Kullanıcı Adı" required>
+        <input type="password" id="password" name="password" placeholder="Şifre" required>
+        <button type="submit">Giriş Yap</button>
+    </form>
+    <p id="errorMessage"></p>
+</div>
 <script>
-    console.log("Script başladı");
-
     document.getElementById("loginForm").addEventListener("submit", async function (e) {
         e.preventDefault();
-
         const username = document.getElementById("username").value;
         const password = document.getElementById("password").value;
-
         const response = await fetch("http://localhost:8080/auth/login", {
             method: "POST",
             headers: {
@@ -35,13 +85,11 @@
             },
             body: JSON.stringify({username, password})
         });
-
         if (response.ok) {
             const data = await response.json();
-            localStorage.setItem("token", data.token); // JWT'yi sakla
-
+            localStorage.setItem("token", data.token);
             alert("Giriş başarılı! Dashboard'a yönlendiriliyorsunuz.");
-            window.location.href = "dashboard.html"; // Veya /admin.html, /doctor.html, vs.
+            window.location.href = "dashboard.html";
         } else {
             document.getElementById("errorMessage").textContent = "Hatalı kullanıcı adı veya şifre.";
         }

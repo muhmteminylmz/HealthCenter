@@ -264,4 +264,12 @@ public class PatientService {
                 .object(createPatientResponse(patient))
                 .build();
     }
+
+    public PatientResponse getPatientByUsername(String username) {
+
+        Patient patient = patientRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException(Messages.NOT_FOUND_USER_MESSAGE));
+
+        return createPatientResponse(patient);
+    }
 }

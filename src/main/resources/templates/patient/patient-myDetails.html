@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8" />
+    <title>Hasta Detayı</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0; padding: 0;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+
+        h3 {
+            background-color: #4caf50;
+            color: white;
+            text-align: center;
+            padding: 15px;
+            margin: 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        #patientDetails {
+            width: 90%;
+            max-width: 700px;
+            margin: 20px auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 1em;
+            text-align: left;
+        }
+
+        table th, table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        table th {
+            background-color: #4caf50;
+            color: white;
+            font-weight: normal;
+        }
+
+        table tr:nth-child(odd) {
+            background-color: #f7f9f7;
+        }
+
+        table tr:hover {
+            background-color: #e8f5e9;
+        }
+
+        p {
+            text-align: center;
+            color: red;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+<h3>Hasta Detayı</h3>
+<div id="patientDetails">
+    <p>Yükleniyor...</p>
+</div>
+
+<script>
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+        window.location.href = "static/login.html";
+    } else {
+        fetch("http://localhost:8080/patient/myDetails", {
+            headers: { "Authorization": "Bearer " + token }
+        })
+        .then(res => res.ok ? res.json() : Promise.reject("Hasta detaylarına ulaşılamadı."))
+        .then(patient => {
+            const patientDetails = document.getElementById("patientDetails");
+            patientDetails.innerHTML = `
+                <table>
+                    <tr><th>Bilgi</th><th>Detay</th></tr>
+                    <tr><td><strong>ID:</strong></td><td>${patient.userId}</td></tr>
+                    <tr><td><strong>İsim:</strong></td><td>${patient.name}</td></tr>
+                    <tr><td><strong>Soyisim:</strong></td><td>${patient.surname}</td></tr>
+                    <tr><td><strong>Doğum Tarihi:</strong></td><td>${new Date(patient.birthDate).toLocaleDateString("tr-TR")}</td></tr>
+                    <tr><td><strong>TC No:</strong></td><td>${patient.tc}</td></tr>
+                    <tr><td><strong>Telefon:</strong></td><td>${patient.phoneNumber}</td></tr>
+                    <tr><td><strong>Cinsiyet:</strong></td><td>${patient.gender}</td></tr>
+                    <tr><td><strong>Kan Grubu:</strong></td><td>${patient.bloodType}</td></tr>
+                    <tr><td><strong>Aile Doktoru ID:</strong></td><td>${patient.familyDoctorId}</td></tr>
+                </table>
+            `;
+        })
+        .catch(err => {
+            const patientDetails = document.getElementById("patientDetails");
+            patientDetails.innerHTML = `<p>${err}</p>`;
+        });
+    }
+</script>
+</body>
+</html>

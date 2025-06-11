@@ -1,72 +1,148 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
     <title>Randevu Oluştur</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f9f9f9;
+            margin: 0; padding: 20px;
+            color: #333;
+        }
+        h2 {
+            text-align: center;
+            color: #4caf50;
+            margin-bottom: 20px;
+        }
+        form {
+            width: 95%;
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        form label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: #4caf50;
+        }
+        form input[type="datetime-local"],
+        form input[type="number"] {
+            width: 100%;
+            padding: 8px 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1em;
+            box-sizing: border-box;
+        }
+        form button {
+            background-color: #4caf50;
+            border: none;
+            color: white;
+            padding: 12px 25px;
+            font-size: 1em;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            width: 100%;
+        }
+        form button:hover {
+            background-color: #45a049;
+        }
+        #message, #error {
+            width: 95%;
+            max-width: 600px;
+            margin: 15px auto 0 auto;
+            font-weight: bold;
+            text-align: center;
+        }
+        #message {
+            color: green;
+        }
+        #error {
+            color: red;
+        }
+    </style>
 </head>
 <body>
-<h2>Randevu Oluştur</h2>
+
+<h2>Yeni Randevu Oluştur</h2>
 
 <form id="appointmentForm">
-    <label for="appointmentDate">Randevu Tarihi:</label><br>
-    <input type="datetime-local" id="appointmentDate" name="appointmentDate" required><br><br>
+    <label for="appointmentDate">Randevu Tarihi:</label>
+    <input type="datetime-local" id="appointmentDate" name="appointmentDate" required />
 
-    <label for="doctorId">Doktor ID:</label><br>
-    <input type="number" id="doctorId" name="doctorId" required><br><br>
+    <label for="doctorId">Doktor ID:</label>
+    <input type="number" id="doctorId" name="doctorId" required />
 
-    <label for="patientId">Hasta ID:</label><br>
-    <input type="number" id="patientId" name="patientId" required><br><br>
-
-    <button type="submit">Kaydet</button>
+    <button type="submit">Randevu Oluştur</button>
 </form>
 
-<p id="message" style="color: green;"></p>
-<p id="error" style="color: red;"></p>
+<p id="message"></p>
+<p id="error"></p>
 
 <script>
-    document.getElementById("appointmentForm").addEventListener("submit", async function (e) {
+    const token = localStorage.getItem("token");
+
+    if (!token) window.location.href = "static/login.html";
+
+    async function getPatientDetails() {
+        const res = await fetch("http://localhost:8080/patient/myDetails", {
+            headers: {
+                "Authorization": "Bearer " + token
+            }
+        });
+        if (!res.ok) throw new Error("Kullanıcı bilgileri alınamadı.");
+        return await res.json();
+    }
+
+    document.getElementById("appointmentForm").addEventListener("submit", async (e) => {
         e.preventDefault();
 
-        const token = localStorage.getItem("token");
-        if (!token) {
-            alert("Giriş yapmanız gerekiyor.");
-            window.location.href = "static/login.html";
+        const appointmentDate = document.getElementById("appointmentDate").value;
+        const doctorId = parseInt(document.getElementById("doctorId").value, 10);
+
+        if (!appointmentDate || !doctorId) {
+            document.getElementById("error").textContent = "Lütfen tüm alanları doldurun.";
+            document.getElementById("message").textContent = "";
             return;
         }
 
-        const appointmentDate = document.getElementById("appointmentDate").value;
-        const doctorId = parseInt(document.getElementById("doctorId").value);
-        const patientId = parseInt(document.getElementById("patientId").value);
-
         try {
-            const response = await fetch("http://localhost:8080/appointment/save", {
+            const patient = await getPatientDetails();
+            const patientId = patient.userId; // Backend’in döndürdüğü ID alanı
+
+            const res = await fetch("http://localhost:8080/appointment/save", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": "Bearer " + token
                 },
                 body: JSON.stringify({
-                    appointmentDate: appointmentDate,
-                    doctorId: doctorId,
-                    patientId: patientId
+                    appointmentDate,
+                    doctorId,
+                    patientId
                 })
             });
 
-            const result = await response.json();
+            const data = await res.json();
 
-            if (response.ok) {
-                document.getElementById("message").textContent = "Randevu başarıyla oluşturuldu!";
-                document.getElementById("error").textContent = "";
-                document.getElementById("appointmentForm").reset();
-            } else {
-                document.getElementById("error").textContent = result.message || "Randevu oluşturulamadı.";
-                document.getElementById("message").textContent = "";
-            }
+            if (!res.ok) throw new Error(data.message || "Randevu oluşturulamadı.");
 
+            document.getElementById("message").textContent = "Randevu başarıyla oluşturuldu!";
+            document.getElementById("error").textContent = "";
+            document.getElementById("appointmentForm").reset();
         } catch (err) {
-            document.getElementById("error").textContent = "Sunucu hatası: " + err.message;
+            document.getElementById("error").textContent = "Hata: " + err.message;
+            document.getElementById("message").textContent = "";
         }
     });
 </script>
+
 </body>
 </html>

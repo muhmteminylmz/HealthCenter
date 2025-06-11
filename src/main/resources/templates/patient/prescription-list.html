@@ -3,11 +3,53 @@
 <head>
     <meta charset="UTF-8" />
     <title>Reçetelerim</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f9f9f9;
+            margin: 0; padding: 20px;
+            color: #333;
+        }
+        h3 {
+            background-color: #4caf50;
+            color: white;
+            padding: 12px 0;
+            text-align: center;
+            margin: 0 0 20px 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border-radius: 6px;
+        }
+        #prescriptionsList {
+            width: 95%;
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        #prescriptionsList div {
+            border-bottom: 1px solid #ddd;
+            padding: 10px 0;
+        }
+        #prescriptionsList div:last-child {
+            border-bottom: none;
+        }
+        p {
+            margin: 5px 0;
+            font-size: 0.95em;
+        }
+        p strong {
+            color: #4caf50;
+        }
+    </style>
 </head>
 <body>
 <h3>Reçetelerim</h3>
 
-<div id="prescriptionsList"></div>
+<div id="prescriptionsList">
+    <p style="text-align: center;">Yükleniyor...</p>
+</div>
 
 <script>
     const token = localStorage.getItem("token");
@@ -22,23 +64,25 @@
     .then(res => res.ok ? res.json() : Promise.reject("Reçeteler bulunamadı"))
     .then(prescriptions => {
         const container = document.getElementById("prescriptionsList");
+        container.innerHTML = "";
+
         if (prescriptions.length === 0) {
-            container.innerText = "Henüz herhangi bir reçete kaydedilmemiş.";
+            container.innerHTML = `<p style="text-align: center;">Henüz herhangi bir reçete kaydedilmemiş.</p>`;
         } else {
-            const list = prescriptions.map(prescription => `
-                <div>
-                    <p><strong>İlaç:</strong> ${prescription.medicine}</p>
-                    <p><strong>Dozaj:</strong> ${prescription.dosage}</p>
-                    <p><strong>Not:</strong> ${prescription.prescriptionNote}</p>
-                    <p><strong>Doktor:</strong> ${prescription.doctorName}</p>
-                    <p><strong>Takip Tarihi:</strong> ${new Date(prescription.followUpDate).toLocaleDateString("tr-TR")}</p>
-                </div>
-            `).join('');
-            container.innerHTML = list;
+            prescriptions.forEach(prescription => {
+                container.innerHTML += `
+                    <div>
+                        <p><strong>İlaç:</strong> ${prescription.medicine}</p>
+                        <p><strong>Dozaj:</strong> ${prescription.dosage}</p>
+                        <p><strong>Not:</strong> ${prescription.prescriptionNote || "-"}</p>
+                        <p><strong>Doktor:</strong> ${prescription.doctorName}</p>
+                        <p><strong>Takip Tarihi:</strong> ${new Date(prescription.followUpDate).toLocaleDateString("tr-TR")}</p>
+                    </div>`;
+            });
         }
     })
     .catch(err => {
-        document.getElementById("prescriptionsList").innerText = err;
+        document.getElementById("prescriptionsList").innerHTML = `<p style="text-align: center; color: red;">${err}</p>`;
     });
 </script>
 
