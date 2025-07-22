@@ -12,4 +12,5 @@ public interface AdminRepository extends JpaRepository<Admin, Long> {
     boolean existsByPhoneNumber(String phoneNumber);
 
     Admin findByUsernameEquals(String username);
+    //deneme
 }
