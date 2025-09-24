@@ -75,7 +75,7 @@ public class WebSecurityConfig {
     private static final String[] AUTH_WHITE_LIST = {
             "/",
             "/index*",
-            "/admin/getall",
+            "/admin/getAll",
             "/static/**",
             "/*.js",
             "/*.json",
