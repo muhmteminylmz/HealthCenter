@@ -26,7 +26,7 @@ public class AdminController {
 
 
     @PostMapping("/save")
-//    @PreAuthorize("hasAnyAuthority('ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ADMIN')")
     public ResponseEntity<?> save(@RequestBody @Valid AdminRequest adminRequest){
 
         return ResponseEntity.ok(adminService.save(adminRequest));
