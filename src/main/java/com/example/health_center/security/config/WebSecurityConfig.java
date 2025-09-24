@@ -62,9 +62,8 @@ public class WebSecurityConfig {
         and().csrf().disable().
                 exceptionHandling().authenticationEntryPoint(unauthorizedHandler).and().
                 sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and().
-                authorizeRequests().antMatchers(AUTH_WHITE_LIST).permitAll()
-                //anyRequest().authenticated()
-        ;
+                authorizeRequests().antMatchers(AUTH_WHITE_LIST).permitAll().
+                anyRequest().authenticated();
 
         http.headers().frameOptions().sameOrigin();
         http.authenticationProvider(authenticationProvider());
