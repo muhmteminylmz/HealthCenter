@@ -26,7 +26,7 @@ public class AdminController {
 
 
     @PostMapping("/save")
-    @PreAuthorize("hasAnyAuthority('ADMIN')")
+//    @PreAuthorize("hasAnyAuthority('ADMIN')")
     public ResponseEntity<?> save(@RequestBody @Valid AdminRequest adminRequest){
 
         return ResponseEntity.ok(adminService.save(adminRequest));
@@ -34,7 +34,7 @@ public class AdminController {
 
     //Not: getAll() *****
     @GetMapping("/getAll")
-    @PreAuthorize("hasAnyAuthority('ADMIN')")
+//    @PreAuthorize("hasAnyAuthority('ADMIN')")
     public ResponseEntity<Page<Admin>> getAll(
             @RequestParam(value = "page",defaultValue = "0") int page,
             @RequestParam(value = "size",defaultValue = "10") int size,
