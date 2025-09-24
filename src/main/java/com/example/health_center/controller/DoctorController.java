@@ -26,7 +26,7 @@ public class DoctorController {
     }
 
     @GetMapping("/getAll")
-    @PreAuthorize("hasAnyAuthority('ADMIN','CHIEFDOCTOR')")
+//    @PreAuthorize("hasAnyAuthority('ADMIN','CHIEFDOCTOR')")
     public List<DoctorResponse> getAll(){
         return doctorService.getAll();
     }
