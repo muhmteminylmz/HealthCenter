@@ -84,6 +84,13 @@ public class WebSecurityConfig {
             "/v3/api-docs/**",
             "/swagger-ui/**",
             "/swagger*/**",
+            //
+            "/**/*.html",
+            "/**/*.css",
+            "/**/*.js",
+            "/**/*.png",
+            "/**/*.jpg",
+            "/**/*.ico"
     };
 
     @Bean
