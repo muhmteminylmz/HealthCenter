@@ -50,7 +50,7 @@
 
     function loadAdmins() {
         errorMessage.innerText = "";
-        fetch(`http://localhost:8080/admin/getAll?page=${page}&size=${size}&sort=${sort}&type=${type}`, {
+        fetch(`https://healthcenter-production.up.railway.app/admin/getAll?page=${page}&size=${size}&sort=${sort}&type=${type}`, {
             headers: { "Authorization": "Bearer " + token }
         })
         .then(res => {
